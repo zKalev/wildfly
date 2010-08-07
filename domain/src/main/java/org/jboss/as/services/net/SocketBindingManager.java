@@ -98,6 +98,7 @@ public interface SocketBindingManager {
 	 * 
 	 * @param binding the managed binding
 	 * @param bindingName the binding name
+	 * @return a closeable, which closes and unregisters the binding
 	 */
 	Closeable registerBinding(final ManagedBinding binding);
 
