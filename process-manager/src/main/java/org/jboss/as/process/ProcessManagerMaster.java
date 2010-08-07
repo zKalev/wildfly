@@ -76,6 +76,7 @@ public final class ProcessManagerMaster {
             try {
                 process.start();
             } catch (IOException e) {
+            	// todo log it
             	e.printStackTrace();
             }
         }
