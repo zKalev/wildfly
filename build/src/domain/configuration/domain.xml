@@ -50,7 +50,7 @@
 
         <profile name="something2">
             <include profile="something"/>
-            <remoting:subsystem thread-pool="remoting-pool">
+            <remoting:subsystem thread-pool="remoting">
                 <remoting:connector name="default-connector" socket-binding="remoting"/>
             </remoting:subsystem>
         </profile>
