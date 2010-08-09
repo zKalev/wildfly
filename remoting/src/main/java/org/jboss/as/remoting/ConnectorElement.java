@@ -22,6 +22,12 @@
 
 package org.jboss.as.remoting;
 
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.EnumSet;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
@@ -39,11 +45,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.xnio.ChannelListener;
 import org.jboss.xnio.OptionMap;
 import org.jboss.xnio.channels.ConnectedStreamChannel;
-
-import javax.xml.stream.XMLStreamException;
-import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.EnumSet;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -158,7 +159,19 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
     /** {@inheritDoc} */
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute("name", name);
-        streamWriter.writeAttribute("socket-binding", name);
+        streamWriter.writeAttribute("socket-binding", socketBinding);
+        if(saslElement != null) {
+        	streamWriter.writeStartElement("sasl");
+        	saslElement.writeContent(streamWriter);
+        }
+        if(authenticationProvider != null) {
+        	streamWriter.writeEmptyElement("authentication-provider");
+        	streamWriter.writeAttribute("name", authenticationProvider);
+        }
+        if (connectorProperties != null) {
+            streamWriter.writeStartElement("properties");
+            connectorProperties.writeContent(streamWriter);
+        }
         streamWriter.writeEndElement();
     }
 
