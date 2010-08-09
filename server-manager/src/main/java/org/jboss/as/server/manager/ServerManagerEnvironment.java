@@ -96,14 +96,14 @@ public class ServerManagerEnvironment {
     private final File domainLogDir;
     private final File domainServersDir;
     private final File domainTempDir;
-    
+    private final File defaultJVM;
     
     private final InputStream stdin;
     private final PrintStream stdout;
     private final PrintStream stderr;
     
     public ServerManagerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr, 
-            InetAddress processManagerAddress, Integer processManagerPort) {
+            InetAddress processManagerAddress, Integer processManagerPort, String jvm) {
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
@@ -138,6 +138,18 @@ public class ServerManagerEnvironment {
         }
         else {
             this.processManagerAddress = null;
+        }
+        
+        // 
+        if(jvm != null) {
+        	final File defaultJava = new File(jvm);
+        	if(defaultJava.isFile()) {
+        		this.defaultJVM = defaultJava;
+        	} else {
+        		this.defaultJVM = null;
+        	}
+        } else {
+        	this.defaultJVM = null;
         }
         
         File home = getFileFromProperty(HOME_DIR);
@@ -281,7 +293,11 @@ public class ServerManagerEnvironment {
     public File getDomainTempDir() {
         return domainTempDir;
     }
-
+    
+    public File getDefaultJVM() {
+		return defaultJVM;
+	}
+    
     private static InetAddress findLocalhost() {
         // FIXME implement findLocalhost
         throw new UnsupportedOperationException("implement me");
