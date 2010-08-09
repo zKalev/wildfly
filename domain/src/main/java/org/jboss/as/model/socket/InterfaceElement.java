@@ -18,8 +18,10 @@ import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
+import org.jboss.as.services.net.NetworkInterfaceBinding;
 import org.jboss.as.services.net.NetworkInterfaceService;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -223,8 +225,11 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> imp
     @Override
     public void activate(ServiceActivatorContext context) {
         log.info("Activating interface element:" + name);
-        context.getBatchBuilder().addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(getName()),
-        		new NetworkInterfaceService(this)).setInitialMode(Mode.ON_DEMAND);
+        BatchServiceBuilder<NetworkInterfaceBinding> service = context.getBatchBuilder()
+        	.addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(getName()), new NetworkInterfaceService(this));
+        service.setLocation(getLocation());
+        service.setInitialMode(Mode.ON_DEMAND);
+        
     }
 
     private class OverallInterfaceCriteria implements InterfaceCriteria {
