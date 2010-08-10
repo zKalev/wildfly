@@ -223,9 +223,9 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         
         String profileName = serverGroup.getProfileName();
         this.profile = domain.getProfile(profileName);
-        if (profile == null)
+        if (profile == null) {
             throw new IllegalStateException("Profile" + profileName + " is not listed in Domain");
-        
+        }
         Set<ServerGroupDeploymentElement> groupDeployments = serverGroup.getDeployments();
         for (ServerGroupDeploymentElement dep : groupDeployments) {
             deployments.put(dep.getKey(), dep);
@@ -437,10 +437,11 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
                 throw new RuntimeException("Failed activate subsystem: " + extensionEntry.getKey(), e);
             }
         }
-
-        // Activate profile
-        profile.activate(context);
-
+        // Activate included profiles
+        for(ProfileElement profile : this.profile.resolveIncludedProfiles()) {
+            // Activate profile
+            profile.activate(context);        	
+        }
         // Activate Interfaces
         final Map<String, InterfaceElement> interfaces = this.interfaces;
         for(InterfaceElement interfaceElement : interfaces.values()) {

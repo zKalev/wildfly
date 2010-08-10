@@ -3,21 +3,24 @@
  */
 package org.jboss.as.model;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.TreeMap;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * An element representing the set of subsystems that make up a server profile.
@@ -227,5 +230,29 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
         for(AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
             subsystem.activate(context);            
         }
+    }
+
+    /**
+     * Resolve the included profiles for this configuration.
+     * 
+     * @return the included profiles
+     */
+    Collection<ProfileElement> resolveIncludedProfiles() {
+    	Map<String, ProfileElement> included = new HashMap<String, ProfileElement>();
+    	internalResolveIncludedProfiles(this, included);
+    	return included.values();
+    }
+    
+    private void internalResolveIncludedProfiles(ProfileElement profile, Map<String, ProfileElement> included) {
+    	included.put(profile.getName(), profile);
+    	for(final String profileInclude : profile.includedProfiles.keySet()) {
+    		final ProfileElement element = profile.includedProfileResolver.resolveRef(profileInclude);
+    		if(element == null) {
+    			throw new IllegalStateException("failed to resolve profile " + profileInclude + ", " + getLocation());
+    		}
+    		if(! included.containsKey(element.getName())) {
+    			internalResolveIncludedProfiles(element, included);
+    		}
+    	}
     }
 }
