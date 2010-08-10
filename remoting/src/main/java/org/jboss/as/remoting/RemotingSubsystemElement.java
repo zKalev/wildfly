@@ -202,6 +202,11 @@ public final class RemotingSubsystemElement extends AbstractSubsystemElement<Rem
         serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         // todo configure option map
         endpointService.setOptionMap(OptionMap.EMPTY);
+        
+        // Activate connectors
+        for(final ConnectorElement connector : connectors.values()) {
+        	connector.activate(context);
+        }
     }
 
     /**
