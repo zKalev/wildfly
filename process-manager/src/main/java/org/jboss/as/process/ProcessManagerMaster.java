@@ -23,10 +23,13 @@
 package org.jboss.as.process;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.process.ManagedProcess.StopProcessListener;
 
 /**
  * Process manager main entry point.  The thin process manager process is implemented here.
@@ -35,29 +38,37 @@ import java.util.Map;
  */
 public final class ProcessManagerMaster {
 
-    private ProcessManagerMaster() {
+    private static final String SERVER_MANAGER_PROCESS_NAME = "ServerManager";
+    
+    ProcessManagerMaster() {
     }
 
     private final Map<String, ManagedProcess> processes = new HashMap<String, ManagedProcess>();
 
     public static void main(String[] args) {
         final ProcessManagerMaster master = new ProcessManagerMaster();
-        final String initialProcessName = args[0];
-        final String initialWorkingDirectory = args[1];
+        final String initialWorkingDirectory = args[0];
         final List<String> fullList = Arrays.asList(args);
-        final List<String> command = fullList.subList(2, fullList.size());
-        master.addProcess(initialProcessName, command, System.getenv(), initialWorkingDirectory);
-        master.startProcess(initialProcessName);
+        final List<String> command = fullList.subList(1, fullList.size());
+        // TODO JBAS-8259 -- possible socket-based communication
+        master.addProcess(SERVER_MANAGER_PROCESS_NAME, command, System.getenv(), initialWorkingDirectory);
+        master.startProcess(SERVER_MANAGER_PROCESS_NAME);
     }
 
     void addProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory) {
+        addProcess(processName, command, env, workingDirectory, RespawnPolicy.DefaultRespawnPolicy.INSTANCE);
+    }
+
+    void addProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory, RespawnPolicy respawnPolicy) {
+        
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             if (processes.containsKey(processName)) {
+                System.err.println("already have process " + processName);
                 // ignore
                 return;
             }
-            final ManagedProcess process = new ManagedProcess(this, processName, command, env, workingDirectory);
+            final ManagedProcess process = new ManagedProcess(this, processName, command, env, workingDirectory, respawnPolicy);
             processes.put(processName, process);
         }
     }
@@ -104,7 +115,7 @@ public final class ProcessManagerMaster {
             }
             synchronized (process) {
                 if (process.isStart()) {
-                    // ignore
+                    System.err.println("Ignoring remove request for running process " + processName);
                     return;
                 }
                 processes.remove(processName);
@@ -112,10 +123,10 @@ public final class ProcessManagerMaster {
         }
     }
 
-    void sendMessage(final String name, final List<String> msg) {
+    void sendMessage(final String sender, final String recipient, final List<String> msg) {
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
-            final ManagedProcess process = processes.get(name);
+            final ManagedProcess process = processes.get(recipient);
             if (process == null) {
                 // ignore
                 return;
@@ -126,30 +137,100 @@ public final class ProcessManagerMaster {
                     return;
                 }
                 try {
-                    process.send(msg);
+                    process.send(sender, msg);
                 } catch (IOException e) {
                     // todo log it
                 }
             }
         }
     }
+    
+    void sendMessage(final String sender, final String recipient, final byte[] msg, long chksum) {
+        final Map<String, ManagedProcess> processes = this.processes;
+        synchronized (processes) {
+            final ManagedProcess process = processes.get(recipient);
+            if (process == null) {
+                // ignore
+                return;
+            }
+            synchronized (process) {
+                if (! process.isStart()) {
+                    // ignore
+                    return;
+                }
+                try {
+                    process.send(sender, msg, chksum);
+                } catch (IOException e) {
+                    // todo log it
+                }
+            }
+        }
+        
+    }
 
-    void broadcastMessage(final List<String> msg) {
+    void broadcastMessage(final String sender, final List<String> msg) {
         final Map<String, ManagedProcess> processes = this.processes;
         synchronized (processes) {
             for (ManagedProcess process : processes.values()) {
                 synchronized (process) {
                     if (! process.isStart()) {
-                        // ignore
-                        return;
+                        // ignore and go on with the other processes
+                        continue;
                     }
                     try {
-                        process.send(msg);
+                        process.send(sender, msg);
                     } catch (IOException e) {
                         // todo log it
                     }
                 }
             }
+        }
+    }
+    
+    void broadcastMessage(final String sender, final byte[] msg, final long chksum) {
+        final Map<String, ManagedProcess> processes = this.processes;
+        synchronized (processes) {
+            for (ManagedProcess process : processes.values()) {
+                synchronized (process) {
+                    if (! process.isStart()) {
+                        // ignore and go on with the other processes
+                        continue;
+                    }
+                    try {
+                        process.send(sender, msg, chksum);
+                    } catch (IOException e) {
+                        // todo log it
+                    }
+                }
+            }
+        }
+    }
+    
+    void registerStopProcessListener(String name, StopProcessListener listener) {
+        final Map<String, ManagedProcess> processes = this.processes;
+        synchronized (processes) {
+            ManagedProcess process = processes.get(name);
+            if (process == null)
+                return;
+            process.registerStopProcessListener(listener);
+        }
+    }
+    
+    List<String> getProcessNames(boolean onlyStarted) {
+        final Map<String, ManagedProcess> processes = this.processes;
+        
+        synchronized (processes) {
+            if (onlyStarted) {
+                List<String> started = new ArrayList<String>();
+                for (Map.Entry<String, ManagedProcess> entry : processes.entrySet()) {
+                    if (entry.getValue().isStart()) {
+                        started.add(entry.getKey());
+                    }
+                }
+                return started;
+            }
+            else
+                return new ArrayList<String>(processes.keySet());
         }
     }
 }

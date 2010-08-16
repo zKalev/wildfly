@@ -30,7 +30,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jboss.as.process.StreamUtils.CheckedBytes;
+
 /**
+ * Remote-process-side counterpart to a {@link ManagedProcess} that exchanges messages
+ * with the process-manager-side ManagedProcess.
+ * 
+ * FIXME reliable transmission support (JBAS-8262)
+ * 
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ProcessManagerSlave {
@@ -90,8 +97,10 @@ public final class ProcessManagerSlave {
             }
         }
         b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.flush();
+        }
     }
 
     public void startProcess(final String processName) throws IOException {
@@ -102,8 +111,10 @@ public final class ProcessManagerSlave {
         b.append(Command.START).append('\0');
         b.append(processName);
         b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.flush();
+        }
     }
 
     public void stopProcess(final String processName) throws IOException {
@@ -114,8 +125,10 @@ public final class ProcessManagerSlave {
         b.append(Command.STOP).append('\0');
         b.append(processName);
         b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.flush();
+        }
     }
 
     public void removeProcess(final String processName) throws IOException {
@@ -126,8 +139,10 @@ public final class ProcessManagerSlave {
         b.append(Command.REMOVE).append('\0');
         b.append(processName);
         b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.flush();
+        }
     }
 
     public void sendMessage(final String processName, final List<String> message) throws IOException {
@@ -141,8 +156,27 @@ public final class ProcessManagerSlave {
             b.append('\0').append(str);
         }
         b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.flush();
+        }
+    }
+
+    public void sendMessage(final String recipient, final byte[] message, final long checksum) throws IOException {
+        if (recipient == null) {
+            throw new IllegalArgumentException("processName is null");
+        }
+        final StringBuilder b = new StringBuilder();
+        b.append(Command.SEND_BYTES).append('\0');
+        b.append(recipient).append('\0');
+        synchronized (output) {
+            StreamUtils.writeString(output, b.toString());
+            StreamUtils.writeInt(output, message.length);
+            output.write(message, 0, message.length);
+            StreamUtils.writeLong(output, checksum);
+            StreamUtils.writeChar(output, '\n');
+            output.flush();
+        }
     }
 
     public void broadcastMessage(final List<String> message) throws IOException {
@@ -152,8 +186,23 @@ public final class ProcessManagerSlave {
             b.append('\0').append(str);
         }
         b.append('\n');
-        StreamUtils.writeString(output, b);
-        output.flush();
+        synchronized (output) {
+            StreamUtils.writeString(output, b);
+            output.flush();
+        }
+    }
+
+    public void broadcastMessage(final byte[] message, final long checksum) throws IOException {
+        final StringBuilder b = new StringBuilder();
+        b.append(Command.BROADCAST_BYTES).append('\0');
+        synchronized (output) {
+            StreamUtils.writeString(output, b.toString());
+            StreamUtils.writeInt(output, message.length);
+            output.write(message);
+            StreamUtils.writeLong(output, checksum);
+            StreamUtils.writeChar(output, '\n');
+            output.flush();
+        }
     }
 
     private final class Controller implements Runnable {
@@ -198,6 +247,27 @@ public final class ProcessManagerSlave {
                                 }
                                 break;
                             }
+                            case MSG_BYTES: {
+                                if (status == Status.MORE) {
+                                    status = StreamUtils.readWord(input, b);
+                                    final String sourceProcess = b.toString();
+                                    if (status == Status.MORE) {
+                                        CheckedBytes cb = StreamUtils.readCheckedBytes(input);
+                                        status = cb.getStatus();
+                                        if (cb.getChecksum() != cb.getExpectedChecksum()) {
+                                            // FIXME deal with invalid checksum
+                                        }
+                                        else {
+                                            try {
+                                                handler.handleMessage(sourceProcess, cb.getBytes());
+                                            } catch (Throwable t) {
+                                                // ignored!
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
+                            }
                         }
                     } catch (IllegalArgumentException e) {
                         // unknown command...
@@ -214,17 +284,31 @@ public final class ProcessManagerSlave {
             if (shutdown.getAndSet(true)) {
                 return;
             }
-            final Thread thread = new Thread(new Runnable() {
-                public void run() {
-                    System.exit(0);
-                }
-            });
-            thread.setName("Exit thread");
-            thread.start();
+            
+            try{
+                ProcessManagerSlave.this.handler.shutdown();
+            }
+            catch (Throwable t) {
+                t.printStackTrace(System.err);
+            }
+            finally {            
+                final Thread thread = new Thread(new Runnable() {
+                    public void run() {
+                        System.exit(0);
+                    }
+                });
+                thread.setName("Exit thread");
+                thread.start();
+            }
         }
     }
 
     public interface Handler {
+        
+        void handleMessage(String sourceProcessName, byte[] message);
+        
         void handleMessage(String sourceProcessName, List<String> message);
+        
+        void shutdown();
     }
 }

@@ -18,6 +18,11 @@ import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.Attribute;
 import org.jboss.as.model.Element;
 import org.jboss.as.model.Namespace;
+import org.jboss.as.services.net.NetworkInterfaceService;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
@@ -29,9 +34,10 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * 
  * @author Brian Stansberry
  */
-public class InterfaceElement extends AbstractModelElement<InterfaceElement> {
+public class InterfaceElement extends AbstractModelElement<InterfaceElement> implements ServiceActivator {
 
     private static final long serialVersionUID = -5256526713311518506L;
+    private static final Logger log = Logger.getLogger("org.jboss.as.socket");
 
     private final String name;
     private String address;
@@ -163,6 +169,19 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> {
         }
         return new OverallInterfaceCriteria();
     }
+    
+    /**
+     * Gets whether this element is configured with necessary information needed
+     * to determine an IP address for the interface; either via a directly
+     * specified {@link #getAddress() address} or via at least one address
+     * selection criteria.
+     * 
+     * @return <code>true</code> if the necessary information is available, <code>false</code>
+     *         otherwise
+     */
+    public boolean isFullySpecified() {
+        return address != null || interfaceCriteria.size() > 0;
+    }
 
     @Override
     protected void appendDifference(Collection<AbstractModelUpdate<InterfaceElement>> target, InterfaceElement other) {
@@ -200,8 +219,17 @@ public class InterfaceElement extends AbstractModelElement<InterfaceElement> {
 
         streamWriter.writeEndElement();
     }
-    
+
+    @Override
+    public void activate(ServiceActivatorContext context) {
+        log.info("Activating interface element:" + name);
+        context.getBatchBuilder().addService(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(getName()),
+        		new NetworkInterfaceService(this)).setInitialMode(Mode.ON_DEMAND);
+    }
+
     private class OverallInterfaceCriteria implements InterfaceCriteria {
+
+        private static final long serialVersionUID = 2784447904647077246L;
 
         @Override
         public boolean isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {

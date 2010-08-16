@@ -33,6 +33,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.jboss.as.process.StreamUtils.CheckedBytes;
 import org.jboss.logging.Logger;
 import org.jboss.logging.NDC;
 
@@ -45,21 +48,37 @@ final class ManagedProcess {
     private final List<String> command;
     private final Map<String, String> env;
     private final String workingDirectory;
+    private final RespawnPolicy respawnPolicy;
     private final long[] startTimeHistory = new long[5];
+    private final Logger log;
 
+    private boolean stopped;
     private boolean start;
     private OutputStream commandStream;
     private Process process;
+    private List<StopProcessListener> stopProcessListeners;
+    private int respawnCount;
 
-    ManagedProcess(final ProcessManagerMaster master, final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory) {
+    ManagedProcess(final ProcessManagerMaster master, final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory, final RespawnPolicy respawnPolicy) {
         this.master = master;
         this.processName = processName;
         this.command = command;
         this.env = env;
         this.workingDirectory = workingDirectory;
+        this.respawnPolicy = respawnPolicy;
+        this.log = Logger.getLogger("org.jboss.process." + processName);
+    }
+
+    public String getProcessName() {
+        return processName;
     }
 
     void start() throws IOException {
+        log.info("Starting " + processName);
+        start(false);
+    }
+    
+    private void start(boolean isRespawn) throws IOException{
         synchronized (this) {
             if (start) {
                 return;
@@ -85,8 +104,12 @@ final class ManagedProcess {
             // todo - error handling in the event that a thread can't start?
             errorThread.start();
             outputThread.start();
+            this.commandStream = process.getOutputStream();
             this.process = process;
             start = true;
+            stopped = false;
+            if (!isRespawn)
+                respawnCount = 0;
         }
     }
 
@@ -95,8 +118,10 @@ final class ManagedProcess {
             if (!start) {
                 return;
             }
+            stopped = true;
             final OutputStream stream = commandStream;
             StreamUtils.writeString(stream, "SHUTDOWN\n");
+            stream.flush();
         }
     }
 
@@ -104,14 +129,31 @@ final class ManagedProcess {
         return start;
     }
 
-    void send(final List<String> msg) throws IOException {
+    void send(final String sender, final List<String> msg) throws IOException {
         final StringBuilder b = new StringBuilder();
         b.append("MSG");
+        b.append('\0');
+        b.append(sender);
         for (String s : msg) {
             b.append('\0').append(s);
         }
         b.append('\n');
         StreamUtils.writeString(commandStream, b);
+        commandStream.flush();
+    }
+    
+    void send(final String sender, final byte[] msg, final long chksum) throws IOException {
+        final StringBuilder b = new StringBuilder();
+        b.append("MSG_BYTES");
+        b.append('\0');
+        b.append(sender);
+        b.append('\0');
+        StreamUtils.writeString(commandStream, b.toString());
+        StreamUtils.writeInt(commandStream, msg.length);
+        commandStream.write(msg, 0, msg.length);
+        StreamUtils.writeLong(commandStream, chksum);
+        StreamUtils.writeChar(commandStream, '\n');
+        commandStream.flush();
     }
 
     private final class OutputStreamHandler implements Runnable {
@@ -123,12 +165,16 @@ final class ManagedProcess {
         }
 
         public void run() {
+            
+            // FIXME reliable transmission support (JBAS-8262)
+            
             final InputStream inputStream = this.inputStream;
             final StringBuilder b = new StringBuilder();
             try {
                 for (;;) {
                     Status status = StreamUtils.readWord(inputStream, b);
                     if (status == Status.END_OF_STREAM) {
+                        log.info("Received end of stream, shutting down");
                         // no more input
                         return;
                     }
@@ -158,6 +204,7 @@ final class ManagedProcess {
                                 try {
                                     size = Integer.parseInt(sizeString, 10);
                                 } catch (NumberFormatException e) {
+                                    e.printStackTrace(System.err); // FIXME remove
                                     break;
                                 }
                                 final List<String> execCmd = new ArrayList<String>();
@@ -173,10 +220,12 @@ final class ManagedProcess {
                                     break;
                                 }
                                 final String mapSizeString = b.toString();
-                                final int mapSize;
+                                final int mapSize, lastEntry;
                                 try {
                                     mapSize = Integer.parseInt(mapSizeString, 10);
+                                    lastEntry = mapSize - 1;
                                 } catch (NumberFormatException e) {
+                                    e.printStackTrace(System.err); // FIXME remove
                                     break;
                                 }
                                 final Map<String, String> env = new HashMap<String, String>();
@@ -187,10 +236,12 @@ final class ManagedProcess {
                                     }
                                     final String key = b.toString();
                                     status = StreamUtils.readWord(inputStream, b);
-                                    if (status != Status.MORE) {
-                                        break OUT;
+                                    if (status == Status.MORE || (i == lastEntry && status == Status.END_OF_LINE)) {
+                                        env.put(key, b.toString());
                                     }
-                                    env.put(key, b.toString());
+                                    else {
+                                        break OUT;
+                                    }                                    
                                 }
                                 master.addProcess(name, execCmd, env, workingDirectory);
                                 break;
@@ -227,13 +278,32 @@ final class ManagedProcess {
                                     break;
                                 }
                                 status = StreamUtils.readWord(inputStream, b);
-                                final String name = b.toString();
+                                final String recipient = b.toString();
                                 final List<String> msg = new ArrayList<String>(0);
                                 while (status == Status.MORE) {
                                     status = StreamUtils.readWord(inputStream, b);
                                     msg.add(b.toString());
                                 }
-                                master.sendMessage(name, msg);
+                                master.sendMessage(processName, recipient, msg);
+                                break;
+                            }
+                            case SEND_BYTES: {
+                                if (status != Status.MORE) {
+                                    break;
+                                }
+                                status = StreamUtils.readWord(inputStream, b);
+                                if (status == Status.MORE) {
+                                    final String recipient = b.toString();
+                                    CheckedBytes cb = StreamUtils.readCheckedBytes(inputStream);
+                                    status = cb.getStatus();
+                                    if (cb.getChecksum() != cb.getExpectedChecksum()) {
+                                        log.error("Incorrect checksum on message for " + recipient);
+                                        // FIXME deal with invalid checksum
+                                    }
+                                    else {
+                                        master.sendMessage(processName, recipient, cb.getBytes(), cb.getExpectedChecksum());
+                                    }
+                                }
                                 break;
                             }
                             case BROADCAST: {
@@ -242,30 +312,87 @@ final class ManagedProcess {
                                     status = StreamUtils.readWord(inputStream, b);
                                     msg.add(b.toString());
                                 }
-                                master.broadcastMessage(msg);
+                                master.broadcastMessage(processName, msg);
+                                break;
+                            }
+                            case BROADCAST_BYTES: {
+                                if (status == Status.MORE) {
+                                    CheckedBytes cb = StreamUtils.readCheckedBytes(inputStream);
+                                    status = cb.getStatus();
+                                    if (cb.getChecksum() != cb.getExpectedChecksum()) {
+                                        // FIXME deal with invalid checksum
+                                    }
+                                    else {
+                                        master.broadcastMessage(processName, cb.getBytes(), cb.getExpectedChecksum());
+                                    }
+                                }
                                 break;
                             }
                         }
                     } catch (IllegalArgumentException e) {
                         // unknown command...
+                        log.error("Received unknown command: " + b.toString());
                     }
                     if (status == Status.MORE) StreamUtils.readToEol(inputStream);
+
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 // exception caught, shut down channel and exit
+                log.error("Output stream handler for process " + processName + " caught an exception; shutting down", e);
+
             } finally {
                 safeClose(inputStream);
                 for (;;) try {
-                    process.waitFor();
+                    invokeStopProcessListeners(process.waitFor());
                     break;
                 } catch (InterruptedException e) {
                 }
-                start = false;
+                
+                boolean respawn = false;
+                synchronized (ManagedProcess.this) {
+                    start = false;
+                    respawn = !stopped;
+                }
+                if (respawn)
+                    respawn();
             }
-            // todo - detect crash & respawn logic
+        }
+        
+        private void respawn() {
+            long wait = 0;
+            synchronized (this) {
+                if (stopped || start)
+                    return;
+                wait = respawnPolicy.getTimeOutMs(++respawnCount);
+                if (wait < 0){
+                    System.err.println(processName + " has crashed " + respawnCount + " times, stopping it");
+                    try {
+                        stop();
+                    } catch (IOException e) {
+                        log.warn("Error stopping crashed " + processName, e);
+                    }
+                    return;
+                }
+            }
+            
+            try {
+                TimeUnit.MILLISECONDS.sleep(wait);
+            } catch (InterruptedException e) {
+                log.info("Error waiting  " + wait + "ms to respawn crashed " + processName, e);
+            }
+            
+            synchronized (this) {
+                if (stopped || start)
+                    return;
+            }
+            try {
+                start(true);
+            }catch(IOException e) {
+                log.warn("Error respawning " + processName, e);
+            }
         }
     }
-
+    
     private static final class ErrorStreamHandler implements Runnable {
         private static final Logger log = Logger.getLogger("org.jboss.as.process.stderr");
 
@@ -320,5 +447,28 @@ final class ManagedProcess {
             closeable.close();
         } catch (Throwable ignored) {
         }
+    }
+    
+    void registerStopProcessListener(StopProcessListener listener) {
+        synchronized (this) {
+            if (stopProcessListeners == null)
+                stopProcessListeners = new ArrayList<StopProcessListener>();
+            stopProcessListeners.add(listener);
+        }
+    }
+    
+    private void invokeStopProcessListeners(int exitCode) {
+        List<StopProcessListener> listeners = null;
+        synchronized (ManagedProcess.this) {
+            listeners = stopProcessListeners;
+        }
+        if (listeners != null) {
+            for (StopProcessListener listener : listeners)
+                listener.processStopped(exitCode);
+        }
+    }
+    
+    interface StopProcessListener{
+        void processStopped(int exitCode);
     }
 }

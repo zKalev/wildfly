@@ -22,9 +22,6 @@
 
 package org.jboss.as.threads;
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -33,7 +30,13 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossExecutors;
 
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+
 /**
+ * Service responsible for creating, starting and stopping a scheduled thread pool executor.
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ScheduledThreadPoolService implements Service<ScheduledExecutorService> {
@@ -44,8 +47,19 @@ public final class ScheduledThreadPoolService implements Service<ScheduledExecut
     private ScheduledExecutorService value;
     private StopContext context;
 
+    private final int maxThreads;
+    private final TimeSpec keepAlive;
+
+    public ScheduledThreadPoolService(final int maxThreads, final TimeSpec keepAlive) {
+        this.maxThreads = maxThreads;
+        this.keepAlive = keepAlive;
+    }
+
     public synchronized void start(final StartContext context) throws StartException {
         executor = new ExecutorImpl(0, threadFactoryValue.getValue());
+        executor.setMaximumPoolSize(maxThreads);
+        if(keepAlive != null)
+            executor.setKeepAliveTime(keepAlive.getDuration(), keepAlive.getUnit());
         value = JBossExecutors.protectedScheduledExecutorService(executor);
     }
 

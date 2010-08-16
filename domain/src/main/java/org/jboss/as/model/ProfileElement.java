@@ -3,38 +3,69 @@
  */
 package org.jboss.as.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import org.jboss.msc.service.Location;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-
-import org.jboss.msc.service.Location;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * An element representing the set of subsystems that make up a server profile.
  * 
  * @author Brian Stansberry
  */
-public class ProfileElement extends AbstractModelElement<ProfileElement> {
+public class ProfileElement extends AbstractModelElement<ProfileElement> implements ServiceActivator {
     private static final long serialVersionUID = -7412521588206707920L;
 
     private final String name;
     private final NavigableMap<String, ProfileIncludeElement> includedProfiles = new TreeMap<String, ProfileIncludeElement>();
-    private final NavigableMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = new TreeMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>();
-
-    public ProfileElement(final Location location, final String name) {
+    private final NavigableMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = 
+        new TreeMap<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>>(QNameComparator.getInstance());
+    private final RefResolver<String, ProfileElement> includedProfileResolver;
+    
+    /**
+     * Construct a new instance.
+     *
+     * @param location the declaration location of the element
+     * @param includedProfileResolver {@link RefResolver} to use to resolve references 
+     *           to included profiles. Should not be used in the constructor
+     *           itself as referenced profiles may not have been created yet.
+     *           Cannot be <code>null</code>
+     */
+    public ProfileElement(final Location location, final String name, final RefResolver<String, ProfileElement> includedProfileResolver) {
         super(location);
         if (name != null) throw new IllegalArgumentException("name is null");
         this.name = name;
+        this.includedProfileResolver = includedProfileResolver;
     }
     
-    public ProfileElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+    /**
+     * Construct a new instance.
+     *
+     * @param reader the reader from which to build this element
+     * @param includedProfileResolver {@link RefResolver} to use to resolve references 
+     *           to included profiles. Should not be used in the constructor
+     *           itself as referenced profiles may not have been parsed yet.
+     *           May be <code>null</code>, in which case any nested {@link Element#INCLUDE}
+     *           element will result in an 
+     *           {@link #unexpectedElement(XMLExtendedStreamReader) unexpected element exception}
+     * @throws XMLStreamException if an error occurs
+     */
+    public ProfileElement(XMLExtendedStreamReader reader, final RefResolver<String, ProfileElement> includedProfileResolver) throws XMLStreamException {
         super(reader);
+
+        this.includedProfileResolver = includedProfileResolver;
+        
         // Handle attributes
         String name = null;
         final int count = reader.getAttributeCount();
@@ -64,6 +95,9 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case INCLUDE: {
+                            if (includedProfileResolver == null) {
+                                throw unexpectedElement(reader);
+                            }
                             final ProfileIncludeElement include = new ProfileIncludeElement(reader);
                             if (includedProfiles.containsKey(include.getProfile())) {
                                 throw new XMLStreamException("Included profile " + include.getProfile() + " already declared", reader.getLocation());
@@ -149,6 +183,10 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
                     }
                 });
     }
+    
+    public Set<ProfileIncludeElement> getIncludedProfiles() {
+        return Collections.unmodifiableSet(new HashSet<ProfileIncludeElement>(includedProfiles.values()));
+    }
 
     @Override
     public long elementHash() {
@@ -182,4 +220,12 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> {
         streamWriter.writeEndElement();
     }
 
+    @Override
+    public void activate(final ServiceActivatorContext context) {
+        // Activate sub-systems
+        final Map<QName, AbstractSubsystemElement<? extends AbstractSubsystemElement<?>>> subsystems = this.subsystems;
+        for(AbstractSubsystemElement<? extends AbstractSubsystemElement<?>> subsystem : subsystems.values()) {
+            subsystem.activate(context);            
+        }
+    }
 }

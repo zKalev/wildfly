@@ -22,18 +22,19 @@
 
 package org.jboss.as.threads;
 
-import java.util.Collection;
-import java.util.concurrent.ScheduledExecutorService;
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.BatchServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -79,6 +80,7 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
                         }
                         default: throw unexpectedElement(reader);
                     }
+                    break;
                 }
                 default: {
                     throw unexpectedElement(reader);
@@ -117,8 +119,10 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
         streamWriter.writeEndElement();
     }
 
-    public void activate(final ServiceContainer container, final BatchBuilder batchBuilder) {
-        final ScheduledThreadPoolService service = new ScheduledThreadPoolService();
+    public void activate(final ServiceActivatorContext context) {
+        final BatchBuilder batchBuilder = context.getBatchBuilder();
+        final ScaledCount maxThreads = getMaxThreads();
+        final ScheduledThreadPoolService service = new ScheduledThreadPoolService(maxThreads != null ? maxThreads.getScaledCount() : Integer.MAX_VALUE, getKeepaliveTime());
         final ServiceName serviceName = JBOSS_THREAD_SCHEDULED_EXECUTOR.append(getName());
         final BatchServiceBuilder<ScheduledExecutorService> serviceBuilder = batchBuilder.addService(serviceName, service);
         final String threadFactory = getThreadFactory();
@@ -129,6 +133,6 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
         } else {
             threadFactoryName = JBOSS_THREAD_FACTORY.append(threadFactory);
         }
-        serviceBuilder.addDependency(JBOSS_THREAD_FACTORY.append(threadFactory)).toInjector(service.getThreadFactoryInjector());
+        serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, service.getThreadFactoryInjector());
     }
 }

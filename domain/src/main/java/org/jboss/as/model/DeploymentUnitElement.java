@@ -22,23 +22,27 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.jboss.msc.service.Location;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * A deployment that is known to the domain.
  * 
  * @author Brian Stansberry
+ * @author John E. Bailey
  */
-public final class DeploymentUnitElement extends AbstractModelElement<DeploymentUnitElement> {
+public final class DeploymentUnitElement extends AbstractModelElement<DeploymentUnitElement> implements ServiceActivator {
 
     private static final long serialVersionUID = 5335163070198512362L;
+    private static final ServiceName MOUNT_SERVICE_NAME = ServiceName.JBOSS.append("mounts");
 
     private final DeploymentUnitKey key;
     private boolean allowed;
@@ -56,7 +60,7 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
         super(reader);
         // Handle attributes
         String fileName = null;
-        String sha1Hash = null;
+        byte[] sha1Hash = null;
         String allowed = null;
         String start = null;
         final int count = reader.getAttributeCount();
@@ -72,7 +76,15 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
                         break;
                     }
                     case SHA1: {
-                        sha1Hash = value;
+                        try {
+                            sha1Hash = hexStringToByteArray(value);
+                        }
+                        catch (Exception e) {
+                           throw new XMLStreamException("Value " + value + 
+                                   " for attribute " + attribute.getLocalName() + 
+                                   " does not represent a properly hex-encoded SHA1 hash", 
+                                   reader.getLocation(), e);
+                        }
                         break;
                     }
                     case ALLOWED: {
@@ -93,7 +105,7 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
         if (sha1Hash == null) {
             throw missingRequired(reader, Collections.singleton(Attribute.SHA1));
         }
-        this.key = new DeploymentUnitKey(fileName, sha1Hash.getBytes());
+        this.key = new DeploymentUnitKey(fileName, sha1Hash);
         this.allowed = allowed == null ? true : Boolean.valueOf(allowed);
         this.start = start == null ? true : Boolean.valueOf(start);
         
@@ -166,6 +178,10 @@ public final class DeploymentUnitElement extends AbstractModelElement<Deployment
      */
     void setAllowed(boolean allowed) {
         this.allowed = allowed;
+    }
+
+    @Override
+    public void activate(ServiceActivatorContext serviceActivatorContext) {
     }
 
     public long elementHash() {
