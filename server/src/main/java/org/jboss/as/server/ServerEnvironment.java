@@ -84,6 +84,15 @@ public class ServerEnvironment {
 
     /**
      * Constant that holds the name of the environment property
+     * for specifying the directory which JBoss will use for
+     * deployments.
+     *
+     * <p>Defaults to <tt><em>SERVER_BASE_DIR</em>/deployments</tt>.
+     */
+    public static final String SERVER_DEPLOY_DIR = "jboss.server.deploy.dir";
+
+    /**
+     * Constant that holds the name of the environment property
      * for specifying the server log directory for JBoss.
      *
      * <p>Defaults to <tt><em>SERVER_BASE_DIR</em>/<em>log</em></tt>.
@@ -107,16 +116,18 @@ public class ServerEnvironment {
     private final File serverBaseDir;
     private final File serverConfigurationDir;
     private final File serverDataDir;
+    private final File serverDeployDir;
     private final File serverLogDir;
     private final File serverTempDir;
-    
+    private final boolean standalone;
     
     private final InputStream stdin;
     private final PrintStream stdout;
     private final PrintStream stderr;
     
     public ServerEnvironment(Properties props, InputStream stdin, PrintStream stdout, PrintStream stderr, 
-            InetAddress processManagerAddress, Integer processManagerPort) {
+            InetAddress processManagerAddress, Integer processManagerPort, boolean standalone) {
+    	this.standalone = standalone;
         if (props == null) {
             throw new IllegalArgumentException("props is null");
         }
@@ -186,6 +197,14 @@ public class ServerEnvironment {
         }
         this.serverDataDir = tmp;
         System.setProperty(SERVER_DATA_DIR, this.serverDataDir.getAbsolutePath());
+
+        tmp = getFileFromProperty(SERVER_DEPLOY_DIR);
+        if (tmp == null) {
+            tmp = new File(this.serverBaseDir, "deployments");
+        }
+        this.serverDeployDir = tmp;
+        System.setProperty(SERVER_DEPLOY_DIR, this.serverDeployDir.getAbsolutePath());
+
         
         tmp = getFileFromProperty(SERVER_LOG_DIR);
         if (tmp == null) {
@@ -276,6 +295,10 @@ public class ServerEnvironment {
         return serverDataDir;
     }
 
+    public File getDomainDeployDir() {
+        return serverDeployDir;
+    }
+
     public File getDomainLogDir() {
         return serverLogDir;
     }
@@ -284,6 +307,10 @@ public class ServerEnvironment {
         return serverTempDir;
     }
 
+    public boolean isStandalone() {
+		return standalone;
+	}
+    
     private static InetAddress findLocalhost() {
         // FIXME implement findLocalhost
         throw new UnsupportedOperationException("implement me");

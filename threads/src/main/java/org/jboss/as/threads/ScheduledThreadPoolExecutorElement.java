@@ -121,7 +121,8 @@ public final class ScheduledThreadPoolExecutorElement extends AbstractExecutorEl
 
     public void activate(final ServiceActivatorContext context) {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
-        final ScheduledThreadPoolService service = new ScheduledThreadPoolService();
+        final ScaledCount maxThreads = getMaxThreads();
+        final ScheduledThreadPoolService service = new ScheduledThreadPoolService(maxThreads != null ? maxThreads.getScaledCount() : Integer.MAX_VALUE, getKeepaliveTime());
         final ServiceName serviceName = JBOSS_THREAD_SCHEDULED_EXECUTOR.append(getName());
         final BatchServiceBuilder<ScheduledExecutorService> serviceBuilder = batchBuilder.addService(serviceName, service);
         final String threadFactory = getThreadFactory();

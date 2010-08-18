@@ -22,18 +22,8 @@
 
 package org.jboss.as.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Set;
-import java.util.TreeMap;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.Extension;
+import org.jboss.as.deployment.service.ServiceDeploymentActivator;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.model.socket.SocketBindingElement;
@@ -41,6 +31,7 @@ import org.jboss.as.model.socket.SocketBindingGroupElement;
 import org.jboss.as.model.socket.SocketBindingGroupRefElement;
 import org.jboss.as.services.net.SocketBindingManager;
 import org.jboss.as.services.net.SocketBindingManagerService;
+import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.BatchBuilder;
@@ -50,6 +41,16 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * A standalone server descriptor.  In a standalone server environment, this object model is read from XML.  In
@@ -62,7 +63,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public final class Standalone extends AbstractModel<Standalone> implements ServiceActivator {
 
     private static final long serialVersionUID = -7764186426598416630L;
-
+    private static final Logger log = Logger.getLogger("org.jboss.as.server");
+    
     private final NavigableMap<String, NamespaceAttribute> namespaces = new TreeMap<String, NamespaceAttribute>();
     private final String schemaLocation;
     private final String serverName;
@@ -455,9 +457,15 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         socketBindings.activate(context);
 
         // Activate deployments
+        new ServiceDeploymentActivator().activate(context); // TODO:  This doesn't belong here.
         final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments = this.deployments;
         for(ServerGroupDeploymentElement deploymentElement : deployments.values()) {
-            deploymentElement.activate(context);
+            try {
+                deploymentElement.activate(context);
+            } catch(Throwable t) {
+                // TODO: Rollback deployments services added before failure?
+                log.error("Failed to activate deployment " + deploymentElement.getName(), t);
+            }
         }
     }
     
