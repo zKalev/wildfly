@@ -25,14 +25,8 @@
  */
 package org.jboss.as.server;
 
-import org.jboss.as.deployment.DeploymentServiceListener;
 import org.jboss.as.model.Standalone;
 import org.jboss.as.server.manager.ServerMessage;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceActivatorContextImpl;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
@@ -51,68 +45,56 @@ import java.util.zip.Checksum;
  * @author Brian Stansberry
  * @author John E. Bailey
  */
-public class Server {
-    private static final Logger logger = Logger.getLogger("org.jboss.as.server");
-    private final ServerEnvironment environment;
-    private ServerCommunicationHandler serverCommunicationHandler;
+public class Server extends AbstractServer {
+
+	private ServerCommunicationHandler serverCommunicationHandler;
     private final MessageHandler messageHandler = new MessageHandler(this);
-    private Standalone config;
-    private ServiceContainer serviceContainer;
 
     public Server(ServerEnvironment environment) {
-        if (environment == null) {
-            throw new IllegalArgumentException("bootstrapConfig is null");
-        }
-        this.environment = environment;
-        launchCommunicationHandler();
-        sendMessage("AVAILABLE");
-        logger.info("Server Available to start");
+    	super(environment);
     }
 
+    public void start() {
+        launchCommunicationHandler();
+        sendMessage("AVAILABLE");
+        log.info("Server Available to start");    	
+    }
+    
     public void start(Standalone config) throws ServerStartException {
-        this.config = config;
-        logger.info("Starting server with config: " + config.getServerName());
-        serviceContainer = ServiceContainer.Factory.create();
-        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-        final DeploymentServiceListener listener = new DeploymentServiceListener(new DeploymentServiceListener.Callback() {
-            @Override
-            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numberServices) {
+    	try {
+    		super.start(config);
+    	} catch(ServerStartException e) {
+    		sendMessage("START FAILED");
+    		throw e;
+    	}
+    }
+
+    public void stop() {
+        super.stop();
+        sendMessage("STOPPED");
+    }
+
+    ServerStartupListener.Callback createListenerCallback() {
+    	return new ServerStartupListener.Callback() {
+            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
                 if(serviceFailures.isEmpty()) {
-                    logger.infof("JBoss AS started [%d services in %dms]", numberServices, elapsedTime);
+                    log.infof("JBoss AS started - Installed %d and started %d services in %dms.", totalServices, startedServices, elapsedTime);
                     sendMessage("STARTED");
                 } else {
                     sendMessage("START FAILED");
-                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed.  Attempted to start %d services in %dms", numberServices, elapsedTime));
+                    final StringBuilder buff = new StringBuilder(String.format("JBoss AS server start failed. Attempted to start %d services in %dms", totalServices, elapsedTime));
                     buff.append("\nThe following services failed to start:\n");
                     for(Map.Entry<ServiceName, StartException> entry : serviceFailures.entrySet()) {
                         buff.append(String.format("\t%s => %s\n", entry.getKey(), entry.getValue().getMessage()));
                     }
-                    logger.error(buff.toString());
+                    log.error(buff.toString());
                 }
             }
-        });
-        batchBuilder.addListener(listener);
-
-        try {
-            listener.startBatch();
-            final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(batchBuilder);
-            config.activate(serviceActivatorContext);
-            batchBuilder.install();
-            listener.finishBatch();
-            listener.finishDeployment();
-        } catch (Throwable t) {
-            sendMessage("START FAILED");
-            throw new ServerStartException("Failed to start server", t);
-        }
+        };
     }
-
-    public void stop() {
-        serviceContainer.shutdown();
-        sendMessage("STOPPED");
-    }
-
+    
     private void launchCommunicationHandler() {
-        this.serverCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getServerCommunicationHandler(environment, messageHandler);
+        this.serverCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getServerCommunicationHandler(getEnvironment(), messageHandler);
         Thread t = new Thread(this.serverCommunicationHandler.getController(), "Server Process");
         t.start();
     }
@@ -142,7 +124,7 @@ public class Server {
                 }
             }
         } catch (IOException e) {
-            logger.error("Failed to send message to Server Manager [" + message + "]", e);
+            log.error("Failed to send message to Server Manager [" + message + "]", e);
         }
     }
 }

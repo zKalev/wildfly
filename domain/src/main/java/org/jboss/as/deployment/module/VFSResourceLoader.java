@@ -19,13 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.deployment.module;
 
-import org.jboss.modules.AbstractResourceLoader;
 import org.jboss.modules.ClassSpec;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.PackageSpec;
+import org.jboss.modules.PathFilter;
+import org.jboss.modules.PathFilters;
 import org.jboss.modules.Resource;
+import org.jboss.modules.ResourceLoader;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -50,18 +53,32 @@ import java.util.jar.Manifest;
  *
  * @author John Bailey
  */
-public class VFSResourceLoader extends AbstractResourceLoader {
+public class VFSResourceLoader implements ResourceLoader {
 
     private final ModuleIdentifier moduleIdentifier;
     private final VirtualFile root;
+    private final String rootName;
     private final Manifest manifest;
+    private final MountHandle mountHandle;
 
-    public VFSResourceLoader(final ModuleIdentifier moduleIdentifier, final VirtualFile root) throws IOException {
+    /**
+     * Construct new instance.
+     * 
+     * @param moduleIdentifier The module identifier
+     * @param rootName The module root name
+     * @param root The root virtual file
+     * @param mountHandle The mount handle
+     * @throws IOException
+     */
+    public VFSResourceLoader(final ModuleIdentifier moduleIdentifier, final String rootName, final VirtualFile root, final MountHandle mountHandle) throws IOException {
         this.moduleIdentifier = moduleIdentifier;
         this.root = root;
+        this.rootName = rootName;
+        this.mountHandle = mountHandle;
         manifest = VFSUtils.getManifest(root);
     }
 
+    /** {@inheritDoc} */
     public ClassSpec getClassSpec(final String name) throws IOException {
         final String fileName = name.replace('.', '/') + ".class";
         final VirtualFile file = root.getChild(fileName);
@@ -91,6 +108,7 @@ public class VFSResourceLoader extends AbstractResourceLoader {
         }
     }
 
+    /** {@inheritDoc} */
     public PackageSpec getPackageSpec(final String name) throws IOException {
         final PackageSpec spec = new PackageSpec();
         final Manifest manifest = this.manifest;
@@ -116,10 +134,22 @@ public class VFSResourceLoader extends AbstractResourceLoader {
         return value == null ? mainAttribute == null ? null : mainAttribute.getValue(name) : value;
     }
 
+    /** {@inheritDoc} */
     public String getLibrary(final String name) {
         return null;
     }
 
+    /** {@inheritDoc} */
+    public String getRootName() {
+        return rootName;
+    }
+
+    /** {@inheritDoc} */
+    public PathFilter getExportFilter() {
+        return PathFilters.acceptAll();
+    }
+
+    /** {@inheritDoc} */
     public Resource getResource(final String name) {
         try {
             final VirtualFile file = root.getChild(name);
@@ -133,6 +163,7 @@ public class VFSResourceLoader extends AbstractResourceLoader {
         }
     }
 
+    /** {@inheritDoc} */
     public Collection<String> getPaths() {
         final List<String> index = new ArrayList<String>();
         // First check for an index file

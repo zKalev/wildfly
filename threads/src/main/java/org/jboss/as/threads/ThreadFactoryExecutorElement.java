@@ -24,13 +24,18 @@ package org.jboss.as.threads;
 
 import org.jboss.as.model.AbstractModelUpdate;
 import org.jboss.as.model.PropertiesElement;
+import org.jboss.msc.service.BatchBuilder;
+import org.jboss.msc.service.BatchServiceBuilder;
 import org.jboss.msc.service.Location;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -38,6 +43,8 @@ import java.util.Collection;
 public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<ThreadFactoryExecutorElement> {
 
     private static final long serialVersionUID = -1052811575815297859L;
+
+    private boolean blocking;
 
     public ThreadFactoryExecutorElement(final Location location, final String name) {
         super(location, name);
@@ -54,6 +61,10 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case NAME: break;
+                case BLOCKING: {
+                    blocking = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    break;
+                }
                 default: throw unexpectedAttribute(reader, i);
             }
         }
@@ -85,10 +96,29 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
     }
 
     public void activate(final ServiceActivatorContext context) {
+        final BatchBuilder batchBuilder = context.getBatchBuilder();
+
+        final ScaledCount maxThreads = getMaxThreads();
+        final ThreadFactoryExecutorService service = new ThreadFactoryExecutorService(maxThreads != null ? maxThreads.getScaledCount() : Integer.MAX_VALUE, blocking);
+        final ServiceName serviceName = JBOSS_THREAD_EXECUTOR.append(getName());
+        final BatchServiceBuilder<ExecutorService> serviceBuilder = batchBuilder.addService(serviceName, service);
+        final String threadFactory = getThreadFactory();
+        final ServiceName threadFactoryName;
+        if (threadFactory == null) {
+            threadFactoryName = serviceName.append("thread-factory");
+            batchBuilder.addService(threadFactoryName, new ThreadFactoryService());
+        } else {
+            threadFactoryName = JBOSS_THREAD_FACTORY.append(threadFactory);
+        }
+        serviceBuilder.addDependency(threadFactoryName, ThreadFactory.class, service.getThreadFactoryInjector());
     }
 
     public long elementHash() {
         return super.elementHash();
+    }
+
+    public boolean isBlocking() {
+        return blocking;
     }
 
     protected void appendDifference(final Collection<AbstractModelUpdate<ThreadFactoryExecutorElement>> target, final ThreadFactoryExecutorElement other) {
@@ -100,6 +130,7 @@ public final class ThreadFactoryExecutorElement extends AbstractExecutorElement<
 
     public void writeContent(final XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
         streamWriter.writeAttribute("name", getName());
+        if (blocking) { streamWriter.writeAttribute("blocking", "true"); }
         final ScaledCount maxThreads = getMaxThreads();
         if (maxThreads != null) writeScaledCountElement(streamWriter, maxThreads, "max-threads");
         final String threadFactory = getThreadFactory();

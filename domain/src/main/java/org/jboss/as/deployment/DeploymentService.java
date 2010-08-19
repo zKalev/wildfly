@@ -39,26 +39,25 @@ public class DeploymentService implements Service<Void> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("deployment");
     private static Logger logger = Logger.getLogger("org.jboss.as.deployment");
 
-    private final String deploymentName;
-
-    public DeploymentService(String deploymentName) {
-        this.deploymentName = deploymentName;
-    }
-
-    @Override
+    /**
+     * Start the deployment.  This will re-mount the deployment root if service is restarted.
+     *
+     * @param context The start context
+     * @throws StartException if any problems occur
+     */
     public void start(StartContext context) throws StartException {
     }
 
-    @Override
+    /**
+     * Stop the deployment.  This will close the virtual file mount.
+     * 
+     * @param context The stop context
+     */
     public void stop(StopContext context) {
     }
 
-    @Override
+    /** {@inheritDoc} **/
     public Void getValue() throws IllegalStateException {
         return null;
-    }
-
-    public String getDeploymentName() {
-        return deploymentName;
     }
 }
