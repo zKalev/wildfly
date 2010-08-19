@@ -193,6 +193,12 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
         </module-def>
 
+        <module-def group="org.jboss.as" artifact="jboss-as-web">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-web"/>
+        	<maven-resource group="org.jboss.web" artifact="jasper-jdt"/>
+        	<maven-resource group="org.jboss.web" artifact="jbossweb"/>
+        </module-def>
+    	
         <module-def group="org.jboss.integration" artifact="jboss-transaction-spi">
             <maven-resource group="org.jboss.integration" artifact="jboss-transaction-spi"/>
         </module-def>
