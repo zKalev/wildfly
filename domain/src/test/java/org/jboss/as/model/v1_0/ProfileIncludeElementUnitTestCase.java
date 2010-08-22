@@ -20,35 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.naming;
+package org.jboss.as.model.v1_0;
 
-import org.jboss.as.Extension;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.staxmapper.XMLMapper;
-
-import javax.xml.namespace.QName;
+import org.jboss.as.model.Namespace;
+import org.jboss.as.model.base.ProfileIncludeElementTestBase;
 
 /**
- * Domain extension used to initialize the naming subsystem element handlers. 
- *
- * @author John E. Bailey
+ * Test ProfileIncludeElement with {@link Namespace#DOMAIN_1_0}.
+ * 
+ * @author Brian Stansberry
  */
-public class NamingExtension implements Extension {
+public class ProfileIncludeElementUnitTestCase extends ProfileIncludeElementTestBase {
 
     /**
-     * Register the naming element handlers.
-     *
-     * @param mapper the mapper
+     * @param name
      */
-    public void registerElementHandlers(final XMLMapper mapper) {
-        mapper.registerRootElement(new QName("urn:jboss:domain:naming:1.0", "subsystem"), new NamingSubsystemElementParser());
+    public ProfileIncludeElementUnitTestCase(String name) {
+        super(name);
     }
 
-    /**
-     * Activate the extension.  
-     *
-     * @param context the service activation context
-     */
-    public void activate(final ServiceActivatorContext context) {
+    @Override
+    protected String getTargetNamespace() {
+        return Namespace.DOMAIN_1_0.getUriString();
     }
+
+    @Override
+    protected String getTargetNamespaceLocation() {
+        return "jboss_7_0.xsd";
+    }
+
 }
