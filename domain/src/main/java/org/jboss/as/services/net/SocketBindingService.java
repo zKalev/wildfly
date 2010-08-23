@@ -78,7 +78,8 @@ public class SocketBindingService implements Service<SocketBinding> {
     			NetworkInterfaceBinding.class, service.getInterfaceBinding());
     	batch.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER,
     			SocketBindingManager.class, service.getSocketBindings());
-    	batch.setInitialMode(Mode.ON_DEMAND);
+    	batch.setLocation(element.getLocation());
+    	batch.setInitialMode(Mode.IMMEDIATE);
 	}
 	
 }

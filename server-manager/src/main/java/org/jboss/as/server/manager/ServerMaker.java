@@ -22,11 +22,6 @@
 
 package org.jboss.as.server.manager;
 
-import org.jboss.as.model.JvmElement;
-import org.jboss.as.model.PropertiesElement;
-import org.jboss.as.model.Standalone;
-import org.jboss.as.process.ProcessManagerSlave;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,6 +29,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.model.JvmElement;
+import org.jboss.as.model.PropertiesElement;
+import org.jboss.as.model.Standalone;
+import org.jboss.as.process.ProcessManagerSlave;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -153,13 +153,20 @@ public final class ServerMaker {
 
     private String getJavaCommand(JvmElement jvm) {
         String javaHome = jvm.getJavaHome();
-        if (javaHome == null) { // TODO should this be possible?            
+        if (javaHome == null) { // TODO should this be possible?
+        	if(environment.getDefaultJVM() != null) {
+        		return environment.getDefaultJVM().getAbsolutePath();
+        	}
             return "java"; // hope for the best
         }
         
         File f = new File(javaHome);
         f = new File(f, "bin");
         f = new File (f, "java");
+        if(f.isFile() == false) {
+        	// TODO better error reporting
+        	throw new IllegalStateException("could not find java: " + jvm.getJavaHome());
+        }
         return f.getAbsolutePath();
     }
 

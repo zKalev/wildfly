@@ -19,41 +19,57 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.services.net;
+package org.jboss.as.web;
 
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBinding {
+enum Namespace {
 
-	private final SocketBindingManager socketBindings;
-	
-	ManagedDatagramSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws SocketException {
-		super(address);
-		this.socketBindings = socketBindings;
-	}
-	
-	public InetSocketAddress getBindAddress() {
-		return (InetSocketAddress) getLocalSocketAddress();
-	}
-	
-	public synchronized void bind(SocketAddress addr) throws SocketException {
-		super.bind(addr);
-		socketBindings.registerBinding(this);
-	}
-	
-	public void close() {
-		try {
-			super.close();
-		} finally {
-			socketBindings.unregisterBinding(this);
-		}
-	}
+    // must be first
+    UNKNOWN(null),
 
+    WEB_1_0("urn:jboss:domain:web:1.0")
+    ;
+
+    /**
+     * The current namespace version.
+     */
+    public static final Namespace CURRENT = WEB_1_0;
+
+    private final String name;
+
+    Namespace(final String name) {
+        this.name = name;
+    }
+
+    /**
+     * Get the URI of this namespace.
+     *
+     * @return the URI
+     */
+    public String getUriString() {
+        return name;
+    }
+
+    private static final Map<String, Namespace> MAP;
+
+    static {
+        final Map<String, Namespace> map = new HashMap<String, Namespace>();
+        for (Namespace namespace : values()) {
+            final String name = namespace.getUriString();
+            if (name != null) map.put(name, namespace);
+        }
+        MAP = map;
+    }
+
+    public static Namespace forUri(String uri) {
+        final Namespace element = MAP.get(uri);
+        return element == null ? UNKNOWN : element;
+    }
+	
 }
 

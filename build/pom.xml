@@ -169,6 +169,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-web</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.integration</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
         </dependency>
@@ -316,6 +321,16 @@
         <dependency>
             <groupId>org.jboss.threads</groupId>
             <artifactId>jboss-threads</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.web</groupId>
+            <artifactId>jasper-jdt</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.web</groupId>
+            <artifactId>jbossweb</artifactId>
         </dependency>
 
         <dependency>

@@ -19,41 +19,45 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.services.net;
+package org.jboss.as.web;
 
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.SocketException;
+import java.util.Collection;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.model.AbstractModelElement;
+import org.jboss.as.model.AbstractModelUpdate;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBinding {
+public class WebRewriteElement extends AbstractModelElement<WebRewriteElement> {
 
-	private final SocketBindingManager socketBindings;
-	
-	ManagedDatagramSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws SocketException {
-		super(address);
-		this.socketBindings = socketBindings;
-	}
-	
-	public InetSocketAddress getBindAddress() {
-		return (InetSocketAddress) getLocalSocketAddress();
-	}
-	
-	public synchronized void bind(SocketAddress addr) throws SocketException {
-		super.bind(addr);
-		socketBindings.registerBinding(this);
-	}
-	
-	public void close() {
-		try {
-			super.close();
-		} finally {
-			socketBindings.unregisterBinding(this);
-		}
-	}
+    protected WebRewriteElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+        super(reader);
+    }
+
+    /** {@inheritDoc} */
+    public long elementHash() {
+        return 0;
+    }
+
+    /** {@inheritDoc} */
+    protected void appendDifference(Collection<AbstractModelUpdate<WebRewriteElement>> target, WebRewriteElement other) {
+       
+    }
+
+    /** {@inheritDoc} */
+    protected Class<WebRewriteElement> getElementClass() {
+        return WebRewriteElement.class;
+    }
+
+    /** {@inheritDoc} */
+    public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        
+    }
 
 }
 

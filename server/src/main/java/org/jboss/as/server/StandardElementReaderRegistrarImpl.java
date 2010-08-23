@@ -52,7 +52,8 @@ public class StandardElementReaderRegistrarImpl implements StandardElementReader
             "org.jboss.as:jboss-as-threads",
             "org.jboss.as:jboss-as-remoting",
             "org.jboss.as:jboss-as-transactions",
-            "org.jboss.as:jboss-as-naming"
+            "org.jboss.as:jboss-as-naming",
+            "org.jboss.as:jboss-as-web"
     });
     
     

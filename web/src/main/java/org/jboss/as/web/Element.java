@@ -19,41 +19,55 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.services.net;
+package org.jboss.as.web;
 
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBinding {
+enum Element {
+	  // must be first
+    UNKNOWN(null),
 
-	private final SocketBindingManager socketBindings;
-	
-	ManagedDatagramSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws SocketException {
-		super(address);
-		this.socketBindings = socketBindings;
-	}
-	
-	public InetSocketAddress getBindAddress() {
-		return (InetSocketAddress) getLocalSocketAddress();
-	}
-	
-	public synchronized void bind(SocketAddress addr) throws SocketException {
-		super.bind(addr);
-		socketBindings.registerBinding(this);
-	}
-	
-	public void close() {
-		try {
-			super.close();
-		} finally {
-			socketBindings.unregisterBinding(this);
-		}
-	}
+    CONNECTOR("connector"),
+    CONTAINER_CONFIG("config"),
+    
+    SUBSYSTEM("subsystem"),
+    
+    VIRTUAL_SERVER("virtual-server"),
+    ;
+
+    private final String name;
+
+    Element(final String name) {
+        this.name = name;
+    }
+
+    /**
+     * Get the local name of this element.
+     *
+     * @return the local name
+     */
+    public String getLocalName() {
+        return name;
+    }
+
+    private static final Map<String, Element> MAP;
+
+    static {
+        final Map<String, Element> map = new HashMap<String, Element>();
+        for (Element element : values()) {
+            final String name = element.getLocalName();
+            if (name != null) map.put(name, element);
+        }
+        MAP = map;
+    }
+
+    public static Element forName(String localName) {
+        final Element element = MAP.get(localName);
+        return element == null ? UNKNOWN : element;
+    }
 
 }
-

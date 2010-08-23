@@ -84,7 +84,8 @@ public final class ProcessManagerMaster {
             try {
                 process.start();
             } catch (IOException e) {
-                // todo log it
+            	// todo log it
+            	e.printStackTrace();
             }
         }
     }

@@ -19,40 +19,27 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.services.net;
+package org.jboss.as.web;
 
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.SocketException;
+import javax.xml.namespace.QName;
+
+import org.jboss.as.Extension;
+import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.staxmapper.XMLMapper;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBinding {
+public final class WebExtension implements Extension {
 
-	private final SocketBindingManager socketBindings;
-	
-	ManagedDatagramSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws SocketException {
-		super(address);
-		this.socketBindings = socketBindings;
+	/** {@inheritDoc} **/
+	public void registerElementHandlers(XMLMapper mapper) {
+		mapper.registerRootElement(new QName(Namespace.CURRENT.getUriString(), Element.SUBSYSTEM.getLocalName()), WebParser.getInstance());
 	}
-	
-	public InetSocketAddress getBindAddress() {
-		return (InetSocketAddress) getLocalSocketAddress();
-	}
-	
-	public synchronized void bind(SocketAddress addr) throws SocketException {
-		super.bind(addr);
-		socketBindings.registerBinding(this);
-	}
-	
-	public void close() {
-		try {
-			super.close();
-		} finally {
-			socketBindings.unregisterBinding(this);
-		}
+
+	/** {@inheritDoc} **/
+	public void activate(ServiceActivatorContext context) {
+		// nothing here
 	}
 
 }

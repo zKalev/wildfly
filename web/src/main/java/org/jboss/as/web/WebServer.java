@@ -19,41 +19,28 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.services.net;
+package org.jboss.as.web;
 
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.SocketException;
+import org.apache.catalina.connector.Connector;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class ManagedDatagramSocketBinding extends DatagramSocket implements ManagedBinding {
+public interface WebServer {
 
-	private final SocketBindingManager socketBindings;
-	
-	ManagedDatagramSocketBinding(final SocketBindingManager socketBindings, SocketAddress address) throws SocketException {
-		super(address);
-		this.socketBindings = socketBindings;
-	}
-	
-	public InetSocketAddress getBindAddress() {
-		return (InetSocketAddress) getLocalSocketAddress();
-	}
-	
-	public synchronized void bind(SocketAddress addr) throws SocketException {
-		super.bind(addr);
-		socketBindings.registerBinding(this);
-	}
-	
-	public void close() {
-		try {
-			super.close();
-		} finally {
-			socketBindings.unregisterBinding(this);
-		}
-	}
+    /** 
+     * Add a connector.
+     * 
+     * @param connector the connector
+     */
+    void addConnector(Connector connector);
 
+    /**
+     * Remove connector.
+     * 
+     * @param connector the connector
+     */
+    void removeConnector(Connector connector);
+    
 }
 

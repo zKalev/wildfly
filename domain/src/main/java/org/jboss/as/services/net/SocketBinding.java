@@ -144,8 +144,13 @@ public class SocketBinding {
 	 */
 	public MulticastSocket createMulticastSocket() throws IOException {
 		final MulticastSocket socket = new ManagedMulticastSocketBinding(socketBindings, getSocketAddress());
-		socket.joinGroup(getMulticastSocketAddress(), networkInterface.getNetworkInterface());
-		return socket;
+		try {
+			socket.joinGroup(getMulticastSocketAddress(), networkInterface.getNetworkInterface());
+			return socket;
+		} catch (IOException e) {
+			try { socket.close(); } catch (Exception ignore) {}
+			throw e;
+		}
 	}
 
 	SocketFactory getSocketFactory() {

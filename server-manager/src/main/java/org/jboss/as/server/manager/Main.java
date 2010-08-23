@@ -145,6 +145,7 @@ public final class Main {
     }
 
     private ServerManagerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
+    	String defaultJVM = null;
         Integer pmPort = null;
         InetAddress pmAddress = null;
 
@@ -191,6 +192,9 @@ public final class Main {
                         usage();
                         return null;
                     }
+                } else if ("-jvm".equals(arg)) {
+                	// check if we get a default jvm 
+                	defaultJVM = args[++i];
                 } else if (arg.startsWith("-D")) {
 
                     // set a system property
@@ -216,7 +220,7 @@ public final class Main {
             }
         }
 
-        return new ServerManagerEnvironment(props, stdin, stdout, stderr, pmAddress, pmPort);
+        return new ServerManagerEnvironment(props, stdin, stdout, stderr, pmAddress, pmPort, defaultJVM);
     }
 
     private URL makeURL(String urlspec) throws MalformedURLException {
