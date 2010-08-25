@@ -20,27 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-/**
- * 
- */
-package org.jboss.as.server;
+package org.jboss.as.model.v1_0;
+
+import org.jboss.as.model.Namespace;
+import org.jboss.as.model.base.DeploymentUnitElementTestBase;
 
 /**
- * A ServerCommunicationHandlerFactory.
+ * Test ServerGroupDeploymentElement with {@link Namespace#DOMAIN_1_0}.
  * 
- * @author John E. Bailey
+ * @author Brian Stansberry
  */
-public final class ServerCommunicationHandlerFactory {
+public class ServerGroupDeploymentElementUnitTestCase extends DeploymentUnitElementTestBase {
 
-    private static final ServerCommunicationHandlerFactory INSTANCE = new ServerCommunicationHandlerFactory();
-    
-    public static ServerCommunicationHandlerFactory getInstance() {
-        return INSTANCE;
+    /**
+     * @param name
+     */
+    public ServerGroupDeploymentElementUnitTestCase(String name) {
+        super(name);
     }
-    
-    public ServerCommunicationHandler getServerCommunicationHandler(ServerEnvironment environment, MessageHandler handler) {
-        return new ServerCommunicationHandler(environment.getProcessName(), environment.getProcessManagerAddress(), environment.getProcessManagerPort(), handler);
+
+    @Override
+    protected String getTargetNamespace() {
+        return Namespace.DOMAIN_1_0.getUriString();
     }
-    
-    private ServerCommunicationHandlerFactory() {}
+
+    @Override
+    protected String getTargetNamespaceLocation() {
+        return "jboss_7_0.xsd";
+    }
+
 }

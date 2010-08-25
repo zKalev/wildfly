@@ -20,27 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-/**
- * 
- */
-package org.jboss.as.server;
+package org.jboss.as.model.v1_0;
+
+import org.jboss.as.model.Namespace;
+import org.jboss.as.model.base.PropertiesElementTestBase;
 
 /**
- * A ServerCommunicationHandlerFactory.
+ * Test PropertiesElement with {@link Namespace#DOMAIN_1_0}.
  * 
- * @author John E. Bailey
+ * @author Brian Stansberry
  */
-public final class ServerCommunicationHandlerFactory {
+public class PropertiesElementUnitTestCase extends PropertiesElementTestBase {
 
-    private static final ServerCommunicationHandlerFactory INSTANCE = new ServerCommunicationHandlerFactory();
-    
-    public static ServerCommunicationHandlerFactory getInstance() {
-        return INSTANCE;
+    /**
+     * @param name
+     */
+    public PropertiesElementUnitTestCase(String name) {
+        super(name);
+        // TODO Auto-generated constructor stub
     }
-    
-    public ServerCommunicationHandler getServerCommunicationHandler(ServerEnvironment environment, MessageHandler handler) {
-        return new ServerCommunicationHandler(environment.getProcessName(), environment.getProcessManagerAddress(), environment.getProcessManagerPort(), handler);
+
+    /* (non-Javadoc)
+     * @see org.jboss.as.model.base.DomainModelElementTestBase#getTargetNamespace()
+     */
+    @Override
+    protected String getTargetNamespace() {
+        return Namespace.DOMAIN_1_0.getUriString();
     }
-    
-    private ServerCommunicationHandlerFactory() {}
+
+    /* (non-Javadoc)
+     * @see org.jboss.as.model.base.DomainModelElementTestBase#getTargetNamespaceLocation()
+     */
+    @Override
+    protected String getTargetNamespaceLocation() {
+        return "jboss_7_0.xsd";
+    }
+
 }
