@@ -20,27 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.deployment.service;
+package org.jboss.as.deployment.test;
 
-import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.vfs.VirtualFile;
+import javax.annotation.ManagedBean;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.annotation.Resources;
+import javax.interceptor.Interceptors;
+import java.io.Serializable;
 
 /**
- * Deployment chain selector which determines whether the service deployment chain should handle this deployment.
- *
  * @author John E. Bailey
  */
-public class ServiceDeploymentChainSelector implements DeploymentChainProvider.Selector {
-    private static final String SERVICE_ARCHIVE_EXTENSION = ".sar";
-    private static final String SERVICE_DESCRIPTOR_PATH = "META-INF/jboss-service.xml";
+@ManagedBean("TestBeanWithInjection")
+@Resources({
+    @Resource(name="bar", type=TestManagedBean.class, mappedName="TestBean")
+})
+@Resource(name="foo", type=TestManagedBean.class, mappedName="TestBean")
+@Interceptors({TestInterceptor.class})
+public class TestManagedBeanWithInjection implements Serializable {
+    @Resource private TestManagedBean other;
 
-    /**
-     * Determine where this deployment is supported by service deployer.
-     *
-     * @param virtualFile The deployment file
-     * @return true if this is s service deployment, and false if not
-     */
-    public boolean supports(final VirtualFile virtualFile) {
-        return virtualFile.getName().endsWith(SERVICE_ARCHIVE_EXTENSION) || virtualFile.getChild(SERVICE_DESCRIPTOR_PATH).exists();
+    @PostConstruct
+    private void printMessage() {
+        System.out.println("Test manage bean started: " + other);
+    }
+
+    public TestManagedBean getOther() {
+        return other;
     }
 }

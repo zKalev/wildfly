@@ -24,32 +24,26 @@ package org.jboss.as.deployment;
 
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
-import org.jboss.as.deployment.module.DeploymentModuleLoaderSelector;
-import org.jboss.as.deployment.service.ServiceDeploymentActivator;
+import org.jboss.as.deployment.chain.DeploymentChainProvider;
+import org.jboss.as.deployment.module.DeploymentModuleLoaderProcessor;
+import org.jboss.as.deployment.module.ModuleConfigProcessor;
+import org.jboss.as.deployment.module.ModuleDependencyProcessor;
+import org.jboss.as.deployment.module.ModuleDeploymentProcessor;
+import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
+import org.jboss.as.deployment.service.ParsedServiceDeploymentProcessor;
+import org.jboss.as.deployment.service.ServiceDeploymentParsingProcessor;
 import org.jboss.as.deployment.test.LegacyService;
-import org.jboss.as.model.ServerGroupDeploymentElement;
-import org.jboss.modules.Module;
-import org.jboss.msc.service.BatchBuilder;
-import org.jboss.msc.service.ServiceActivatorContext;
-import org.jboss.msc.service.ServiceActivatorContextImpl;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.TimingServiceListener;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import static org.jboss.as.deployment.TestUtils.copyResource;
+import static org.jboss.as.deployment.TestUtils.getResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 /**
  * Test case to do some basic Service deployment functionality checking.
@@ -59,39 +53,30 @@ import static org.junit.Assert.fail;
 public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
 
     private static final ServiceName TEST_SERVICE_NAME = ServiceName.JBOSS.append("test", "service");
-    private static final byte[] BLANK_SHA1 = new byte[20];
 
-    private ServiceContainer serviceContainer;
+    @BeforeClass
+    public static void setupChain() {
+        final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.service");
+        deploymentChain.addProcessor(new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
+        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(), DeploymentModuleLoaderProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
+        deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
+        DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain,
+            new DeploymentChainProvider.Selector() {
+                public boolean supports(VirtualFile root) {
+                    return "serviceXmlDeployment.jar".equals(root.getName());
+                }
+            }
+        );
+    }
 
     @Test
-    public void testParsedDeployment() throws Exception {
-        final BatchBuilder batchBuilder = serviceContainer.batchBuilder();
-        final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicBoolean completed = new AtomicBoolean(false);
-        final DeploymentServiceListener listener = new DeploymentServiceListener(new DeploymentServiceListener.Callback() {
-            public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int numberServices) {
-                completed.set(true);
-                if(serviceFailures.size() > 0)
-                    fail("Service failures: " + serviceFailures);
-                // Ensure we count down the latch when all other tasks are done JBAS-8321
-                latch.countDown();
-            }
-        });
-        batchBuilder.addListener(listener);
-
-        final VirtualFile deploymentFile = initializeDeployment("/test/serviceXmlDeployment.jar");
-
-        listener.startBatch();
-
-        new ServerGroupDeploymentElement(null, deploymentFile.getName(), BLANK_SHA1, true).activate(new ServiceActivatorContextImpl(batchBuilder));
-
-        batchBuilder.install();
-        listener.finishBatch();
-        listener.finishDeployment();
-        latch.await(10L, TimeUnit.SECONDS);
-        if(!completed.get())
-            fail("Services were not installed within a second");
-
+    public void testDeployment() throws Exception {
+        executeDeployment(initializeDeployment("/test/serviceXmlDeployment.jar"));
+        
         final ServiceController<?> testServiceController = serviceContainer.getService(TEST_SERVICE_NAME);
         assertNotNull(testServiceController);
         assertEquals(ServiceController.State.UP, testServiceController.getState());
@@ -114,39 +99,11 @@ public class ServiceDeploymentTestCase extends AbstractDeploymentTest {
         assertNotNull(legacyServiceThree);
         assertEquals(legacyService, legacyServiceThree.getOther());
         assertEquals("Another test value", legacyServiceThree.getSomethingElse());
-
-        serviceContainer.shutdown();
-    }
-
-    @Before
-    public void setup() throws Exception {
-        System.setProperty("jboss.server.deploy.dir", VFS.getChild(getResource("/test")).getPathName());
-        Module.setModuleLoaderSelector(new DeploymentModuleLoaderSelector());
-        serviceContainer = ServiceContainer.Factory.create();
-        final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.service");
-
-        final BatchBuilder builder = serviceContainer.batchBuilder();
-        final CountDownLatch latch = new CountDownLatch(1);
-        final TimingServiceListener listener = new TimingServiceListener(new Runnable() {
-            @Override
-            public void run() {
-                latch.countDown();
-            }
-        });
-        builder.addListener(listener);
-        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(builder);
-        new ServiceDeploymentActivator().activate(serviceActivatorContext);
-
-        builder.install();
-        listener.finishBatch();
-        latch.await(1L, TimeUnit.SECONDS);
-        if (!listener.finished())
-            fail("Did not install service deployment components within 1 second.");
     }
 
     private VirtualFile initializeDeployment(final String path) throws Exception {
-        final VirtualFile virtualFile = VFS.getChild(getResource(path));
-        copyResource("/org/jboss/as/deployment/test/LegacyService.class", path, "org/jboss/as/deployment/test");
+        final VirtualFile virtualFile = VFS.getChild(getResource(ServiceDeploymentTestCase.class, path));
+        copyResource(ServiceDeploymentTestCase.class, "/org/jboss/as/deployment/test/LegacyService.class", path, "org/jboss/as/deployment/test");
         return virtualFile;
     }
 }
