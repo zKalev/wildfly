@@ -34,7 +34,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.Extension;
-import org.jboss.as.deployment.service.ServiceDeploymentActivator;
+import org.jboss.as.deployment.chain.JarDeploymentActivator;
 import org.jboss.as.model.socket.InterfaceElement;
 import org.jboss.as.model.socket.ServerInterfaceElement;
 import org.jboss.as.model.socket.SocketBindingElement;
@@ -433,7 +433,7 @@ public final class Standalone extends AbstractModel<Standalone> implements Servi
         socketBindings.activate(context);
 
         // Activate deployments
-        new ServiceDeploymentActivator().activate(context); // TODO:  This doesn't belong here.
+        new JarDeploymentActivator().activate(context); // TODO:  This doesn't belong here.
         final Map<DeploymentUnitKey, ServerGroupDeploymentElement> deployments;
         synchronized (this.deployments) {
             deployments = new TreeMap<DeploymentUnitKey, ServerGroupDeploymentElement>(this.deployments);

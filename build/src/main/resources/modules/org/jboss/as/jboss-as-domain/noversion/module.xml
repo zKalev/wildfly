@@ -29,6 +29,10 @@
     </resources>
 
     <dependencies>
+        <module group="javax.annotation" name="api"/>
+        <module group="javax.interceptor" name="api"/>
+        <module group="org.javassist" name="javassist"/>
+        <module group="org.jboss" name="jandex"/>
         <module group="org.jboss" name="jboss-vfs"/>
         <module group="org.jboss" name="staxmapper"/>
         <module group="org.jboss.logging" name="jboss-logging"/>

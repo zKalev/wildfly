@@ -42,7 +42,7 @@
             </fileset>
         </chmod>
     </target>
-	
+
     <target name="modules">
 
         <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="target/jboss-modules.jar"/>
@@ -153,6 +153,14 @@
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
 
+        <module-def group="org.javassist" artifact="javassist">
+            <maven-resource group="javassist" artifact="javassist"/>
+        </module-def>
+
+        <module-def group="org.jboss.as" artifact="jboss-as-connector">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-connector"/>
+        </module-def>
+
         <module-def group="org.jboss.as" artifact="jboss-as-domain">
             <maven-resource group="org.jboss.as" artifact="jboss-as-domain"/>
         </module-def>
@@ -199,6 +207,10 @@
         	<maven-resource group="org.jboss.web" artifact="jbossweb"/>
         </module-def>
     	
+        <module-def group="org.jboss" artifact="jandex">
+            <maven-resource group="org.jboss" artifact="jandex"/>
+        </module-def>
+
         <module-def group="org.jboss.integration" artifact="jboss-transaction-spi">
             <maven-resource group="org.jboss.integration" artifact="jboss-transaction-spi"/>
         </module-def>

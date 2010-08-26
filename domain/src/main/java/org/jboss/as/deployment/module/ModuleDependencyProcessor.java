@@ -23,12 +23,10 @@
 package org.jboss.as.deployment.module;
 
 import org.jboss.as.deployment.DeploymentPhases;
-import org.jboss.as.deployment.attachment.Dependencies;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.Location;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
@@ -43,7 +41,7 @@ import static org.jboss.as.deployment.attachment.VirtualFileAttachment.getVirtua
  * @author John E. Bailey
  */
 public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
-    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(100L);
+    public static final long PRIORITY = DeploymentPhases.MODULE_DEPENDENCIES.plus(100L);
 
     /**
      * Process the deployment root for module dependency information.
@@ -57,7 +55,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
         try {
             manifest = VFSUtils.getManifest(deploymentRoot);
         } catch(IOException e) {
-            throw new DeploymentUnitProcessingException("Failed to get manifest for deployment " + deploymentRoot, e, new Location(e.getStackTrace()[0].getFileName(), e.getStackTrace()[0].getLineNumber(), -1, null));
+            throw new DeploymentUnitProcessingException("Failed to get manifest for deployment " + deploymentRoot, e);
         }
         if(manifest == null)
             return;
@@ -76,7 +74,7 @@ public class ModuleDependencyProcessor implements DeploymentUnitProcessor {
             boolean export = parseOptionalExportParams(dependencyParts, "export");
             boolean optional = parseOptionalExportParams(dependencyParts, "export");
             ModuleConfig.Dependency dependency = new ModuleConfig.Dependency(dependencyId, true, optional, export);
-            Dependencies.addDependency(context, dependency);
+            ModuleDependencies.addDependency(context, dependency);
         }
     }
 

@@ -54,6 +54,21 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.jboss.spec.javax.annotation</groupId>
+            <artifactId>jboss-annotations-api_1.1_spec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.interceptor</groupId>
+            <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jandex</artifactId>
+        </dependency>
+        
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>staxmapper</artifactId>
         </dependency>
@@ -84,11 +99,16 @@
         </dependency>
 
         <dependency>
+            <groupId>javassist</groupId>
+            <artifactId>javassist</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
             <scope>test</scope>
         </dependency>
-      
+
         <dependency>
            <groupId>junit</groupId>
            <artifactId>junit</artifactId>

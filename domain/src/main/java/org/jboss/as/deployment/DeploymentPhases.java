@@ -29,11 +29,13 @@ package org.jboss.as.deployment;
  */
 public enum DeploymentPhases {
     VALIDATE(0L),
-    PARSE_DESCRIPTORS(2000000L),
-    MODULARIZE(3000000L),
+    PARSE_DESCRIPTORS(VALIDATE.plus(1000000L)),
+    MODULE_DEPENDENCIES(PARSE_DESCRIPTORS.plus(1000000L)),
+    MODULARIZE(MODULE_DEPENDENCIES.plus(1000000L)),
+    POST_MODULE_DESCRIPTORS(MODULARIZE.plus(1000000L)),
     //...
-    INSTALL_SERVICES(10000000L),
-    CLEANUP(20000000L);
+    INSTALL_SERVICES(POST_MODULE_DESCRIPTORS.plus(1000000L)),
+    CLEANUP(INSTALL_SERVICES.plus(1000000L));
 
     private final long priority;
 
@@ -45,7 +47,7 @@ public enum DeploymentPhases {
         return priority + offset;
     }
 
-    public long getPriority() {
+    public long priority() {
         return priority;
     }
 }

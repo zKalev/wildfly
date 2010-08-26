@@ -231,7 +231,7 @@ public final class ProcessManagerMaster {
         }
     }
     
-    void sendMessage(final String sender, final String recipient, final byte[] msg, long chksum) {
+    void sendMessage(final String sender, final String recipient, final byte[] msg) {
         if (shutdown.get())
             return;
 
@@ -248,7 +248,7 @@ public final class ProcessManagerMaster {
                     return;
                 }
                 try {
-                    process.send(sender, msg, chksum);
+                    process.send(sender, msg);
                 } catch (IOException e) {
                     // todo log it
                 }
@@ -279,7 +279,7 @@ public final class ProcessManagerMaster {
         }
     }
     
-    void broadcastMessage(final String sender, final byte[] msg, final long chksum) {
+    void broadcastMessage(final String sender, final byte[] msg) {
         if (shutdown.get())
             return;
 
@@ -292,7 +292,7 @@ public final class ProcessManagerMaster {
                         continue;
                     }
                     try {
-                        process.send(sender, msg, chksum);
+                        process.send(sender, msg);
                     } catch (IOException e) {
                         // todo log it
                     }
