@@ -24,6 +24,7 @@
         xmlns:remoting="urn:jboss:domain:remoting:1.0"
         xmlns:threads="urn:jboss:domain:threads:1.0"
         xmlns:naming="urn:jboss:domain:naming:1.0"
+        xmlns:web="urn:jboss:domain:web:1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:jboss:domain:1.0 jboss_7_0.xsd
                             urn:jboss:domain:remoting:1.0 jboss-remoting.xsd
@@ -40,6 +41,9 @@
             </threads:scheduled-thread-pool-executor>
         </threads:subsystem>
         <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
+        <web:subsystem>
+            <web:connector name="default" binding="http" />
+        </web:subsystem>
 	</profile>
 
     <interfaces>
