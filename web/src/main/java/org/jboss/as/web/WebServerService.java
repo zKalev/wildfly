@@ -46,6 +46,7 @@ import org.apache.catalina.startup.Catalina;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.util.modeler.Registry;
+import org.apache.tomcat.util.http.mapper.Mapper;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -102,7 +103,8 @@ class WebServerService implements WebServer, Service<WebServer> {
         final Engine engine = new StandardEngine();
         engine.setName(JBOSS_WEB);
         engine.setService(service);
-        // engine.setDefaultHost(engineMetaData.getDefaultHost());
+        engine.setDefaultHost("localhost"); // HACK
+        
         service.setContainer(engine);
         
         final AprLifecycleListener apr = new AprLifecycleListener();
@@ -193,7 +195,11 @@ class WebServerService implements WebServer, Service<WebServer> {
         }
         // Add the default Servlet org.apache.catalina.servlets.DefaultServlet.class
         ContextConfig config = new ContextConfig();
-        Context rootContext = catalina.createContext("/", "/tmp", config);
+        Context rootContext = catalina.createContext("", "/tmp", config);
+        host.addChild(rootContext);
+        Mapper map = rootContext.getMapper();
+        map.setDefaultHostName(element.getName());
+        Logger.getLogger("org.jboss.web").info("createHost: " + element.getName());
         
         Wrapper wrapper = rootContext.createWrapper();
         wrapper.setName("DefaultServlet");
@@ -202,6 +208,7 @@ class WebServerService implements WebServer, Service<WebServer> {
         wrapper.addInitParameter("debug","99");
         wrapper.addInitParameter("listings", "true");
         rootContext.addChild(wrapper);
+        
         rootContext.addServletMapping("/*", "DefaultServlet");
         rootContext.setIgnoreAnnotations(true);
         rootContext.setPrivileged(true);
@@ -211,7 +218,6 @@ class WebServerService implements WebServer, Service<WebServer> {
         loader.setContainer(host);
         rootContext.setLoader(loader);
         
-        host.addChild(rootContext);
         Logger.getLogger("org.jboss.web").info("createHost: Done");
         return host;
     }
