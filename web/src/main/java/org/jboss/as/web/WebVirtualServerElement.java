@@ -46,6 +46,7 @@ public class WebVirtualServerElement extends AbstractModelElement<WebVirtualServ
     protected WebVirtualServerElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // TODO Handle elements
+        this.name = "localhost";
         requireNoContent(reader);
     }
 

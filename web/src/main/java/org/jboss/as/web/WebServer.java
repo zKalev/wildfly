@@ -21,6 +21,7 @@
 */
 package org.jboss.as.web;
 
+import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;
 
 /**
@@ -28,6 +29,20 @@ import org.apache.catalina.connector.Connector;
  */
 public interface WebServer {
 
+	/**
+	 * Add a web context.
+	 * 
+	 * @param context the web context
+	 */
+	void addContext(Context context);
+	
+	/**
+	 * Remove web context.
+	 *
+	 * @param context the web context
+	 */
+	void removeContext(Context context);
+	
     /** 
      * Add a connector.
      * 

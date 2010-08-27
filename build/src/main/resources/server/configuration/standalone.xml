@@ -43,6 +43,7 @@
         <naming:subsystem bind-app-context="true" bind-module-context="true" bind-comp-context="true"/>
         <web:subsystem>
             <web:connector name="default" binding="http" />
+            <web:virtual-server name="localhost" />
         </web:subsystem>
 	</profile>
 
