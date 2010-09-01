@@ -154,6 +154,8 @@ public class WebSubsystemElement extends AbstractSubsystemElement<WebSubsystemEl
 	    for(final WebConnectorElement connector : this.connectors.values()) {
 	        connector.activate(context);
 	    }
+	    
+	    new WebDeploymentActivator().activate(context);
 	}
 }
 
