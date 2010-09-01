@@ -68,8 +68,8 @@ class WebConnectorService implements Service<Connector> {
             connector.setProtocol(configuration.getProtocol());
             //connector.setScheme(configuration.getScheme());
             connector.setScheme("http"); // HACK!!!
-            connector.setProxyName("localhost"); // HACK !!!
-            connector.setProxyPort(8080); //HACK !!!
+            //connector.setProxyName("localhost"); // HACK !!!
+            //connector.setProxyPort(8080); //HACK !!!
             // TODO set Executor on ProtocolHandler
 
             // TODO use server socket factory - or integrate with {@code ManagedBinding}

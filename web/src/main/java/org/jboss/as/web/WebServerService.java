@@ -27,7 +27,6 @@ import java.util.Collection;
 
 import javax.management.MBeanServer;
 import javax.naming.NamingException;
-import javax.servlet.Servlet;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -112,10 +111,13 @@ class WebServerService implements WebServer, Service<WebServer> {
         
         server.addLifecycleListener(apr);
         server.addLifecycleListener(new JasperListener());
-
+        
+        //  get "jboss-as-web-root" to have a ROOT static "webapp"
+        String url =  System.getProperty("module.path") + "/org/jboss/as/jboss-as-web-root/noversion/ROOT";
+ 
         // Create the virtual hosts
         for(final WebVirtualServerElement virtual : virtualServers) {
-            engine.addChild(createHost(virtual));
+            engine.addChild(createHost(virtual, url));
         }
 
         try {
@@ -125,6 +127,7 @@ class WebServerService implements WebServer, Service<WebServer> {
         } catch (Exception e) {
             throw new StartException(e);
         }
+        
     }
 
     /** {@inheritDoc} */
@@ -175,7 +178,7 @@ class WebServerService implements WebServer, Service<WebServer> {
      * @param element the virtual server configuration
      * @return the host
      */
-    Host createHost(WebVirtualServerElement element) {
+    Host createHost(WebVirtualServerElement element, String url) {
         Logger.getLogger("org.jboss.web").info("createHost");
         final StandardHost host = new StandardHost();
         host.setName(element.getName());
@@ -195,11 +198,10 @@ class WebServerService implements WebServer, Service<WebServer> {
         }
         // Add the default Servlet org.apache.catalina.servlets.DefaultServlet.class
         ContextConfig config = new ContextConfig();
-        Context rootContext = catalina.createContext("", "/tmp", config);
+        Context rootContext = catalina.createContext("", url, config);
         host.addChild(rootContext);
         Mapper map = rootContext.getMapper();
         map.setDefaultHostName(element.getName());
-        Logger.getLogger("org.jboss.web").info("createHost: " + element.getName());
         
         Wrapper wrapper = rootContext.createWrapper();
         wrapper.setName("DefaultServlet");
@@ -212,6 +214,7 @@ class WebServerService implements WebServer, Service<WebServer> {
         rootContext.addServletMapping("/*", "DefaultServlet");
         rootContext.setIgnoreAnnotations(true);
         rootContext.setPrivileged(true);
+        rootContext.addWelcomeFile("index.html");
         // Hacks...
         rootContext.setInstanceManager(new HackInstanceManager());
         Loader loader = new HackLoader();

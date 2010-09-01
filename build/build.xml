@@ -207,6 +207,10 @@
         	<maven-resource group="org.jboss.web" artifact="jbossweb"/>
         </module-def>
     	
+        <module-def group="org.jboss.as" artifact="jboss-as-web-root">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-web-root"/>
+        </module-def>
+
         <module-def group="org.jboss" artifact="jandex">
             <maven-resource group="org.jboss" artifact="jandex"/>
         </module-def>

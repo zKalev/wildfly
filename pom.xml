@@ -224,12 +224,19 @@
                 <version>${project.version}</version>
             </dependency>
 
-
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <!-- Something ? 
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-web-root</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+             -->
 
             <!-- External Dependencies -->
 
