@@ -22,6 +22,7 @@
 package org.jboss.as.web;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
@@ -44,8 +45,8 @@ import org.apache.catalina.core.StandardService;
 import org.apache.catalina.startup.Catalina;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
-import org.apache.tomcat.util.modeler.Registry;
 import org.apache.tomcat.util.http.mapper.Mapper;
+import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -113,11 +114,11 @@ class WebServerService implements WebServer, Service<WebServer> {
         server.addLifecycleListener(new JasperListener());
         
         //  get "jboss-as-web-root" to have a ROOT static "webapp"
-        String url =  System.getProperty("module.path") + "/org/jboss/as/jboss-as-web-root/noversion/ROOT";
+        final File root = new File(System.getProperty("module.path"), "/org/jboss/as/jboss-as-web-root/noversion/ROOT");
  
         // Create the virtual hosts
         for(final WebVirtualServerElement virtual : virtualServers) {
-            engine.addChild(createHost(virtual, url));
+            engine.addChild(createHost(virtual, root));
         }
 
         try {
@@ -178,7 +179,7 @@ class WebServerService implements WebServer, Service<WebServer> {
      * @param element the virtual server configuration
      * @return the host
      */
-    Host createHost(WebVirtualServerElement element, String url) {
+    Host createHost(WebVirtualServerElement element, File root) {
         Logger.getLogger("org.jboss.web").info("createHost");
         final StandardHost host = new StandardHost();
         host.setName(element.getName());
@@ -198,7 +199,7 @@ class WebServerService implements WebServer, Service<WebServer> {
         }
         // Add the default Servlet org.apache.catalina.servlets.DefaultServlet.class
         ContextConfig config = new ContextConfig();
-        Context rootContext = catalina.createContext("", url, config);
+        Context rootContext = catalina.createContext("", root.getAbsolutePath(), config);
         host.addChild(rootContext);
         Mapper map = rootContext.getMapper();
         map.setDefaultHostName(element.getName());
