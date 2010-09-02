@@ -56,7 +56,7 @@ import org.jboss.msc.value.Values;
  * @author Emanuel Muckenhuber
  */
 class WebDeploymentActivator implements ServiceActivator {
-    public static final long WAR_DEPLOYMENT_CHAIN_PRIORITY = 3000000L;
+    public static final long WAR_DEPLOYMENT_CHAIN_PRIORITY = 1000L;
     public static final ServiceName WAR_DEPLOYMENT_CHAIN_SERVICE_NAME = DeploymentChain.SERVICE_NAME.append("war");
 
     /**
