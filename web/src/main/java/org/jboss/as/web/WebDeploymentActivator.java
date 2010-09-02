@@ -23,8 +23,11 @@ package org.jboss.as.web;
 
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
+import org.jboss.as.deployment.chain.DeploymentChainProcessorInjector;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.chain.JarDeploymentChainSelector;
+import org.jboss.as.deployment.chain.DeploymentChainProviderInjector;
+import org.jboss.as.deployment.chain.DeploymentChainProviderService;
+import org.jboss.as.deployment.chain.DeploymentChainService;
 import org.jboss.as.deployment.managedbean.ManagedBeanAnnotationProcessor;
 import org.jboss.as.deployment.managedbean.ManagedBeanDependencyProcessor;
 import org.jboss.as.deployment.managedbean.ManagedBeanDeploymentProcessor;
@@ -36,8 +39,15 @@ import org.jboss.as.deployment.naming.ModuleContextProcessor;
 import org.jboss.as.deployment.processor.AnnotationIndexProcessor;
 import org.jboss.as.deployment.service.ParsedServiceDeploymentProcessor;
 import org.jboss.as.deployment.service.ServiceDeploymentParsingProcessor;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
+import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
+import org.jboss.as.web.deployment.WarDeploymentChainSelector;
+import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.Value;
+import org.jboss.msc.value.Values;
 
 /**
  * Activator of the web deployment system. 
@@ -45,24 +55,39 @@ import org.jboss.msc.service.ServiceActivatorContext;
  * @author Emanuel Muckenhuber
  */
 class WebDeploymentActivator implements ServiceActivator {
-
     public static final long WAR_DEPLOYMENT_CHAIN_PRIORITY = 3000000L;
-    
-    public void activate(ServiceActivatorContext serviceActivatorContext) {
-        final DeploymentChain deploymentChain = new DeploymentChainImpl("deployment.chain.war");
-        deploymentChain.addProcessor(new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ManagedBeanDependencyProcessor(), ManagedBeanDependencyProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
-        deploymentChain.addProcessor(new DeploymentModuleLoaderProcessor(), DeploymentModuleLoaderProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ManagedBeanAnnotationProcessor(), ManagedBeanAnnotationProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
-        deploymentChain.addProcessor(new ManagedBeanDeploymentProcessor(), ManagedBeanDeploymentProcessor.PRIORITY);
-        DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain, new JarDeploymentChainSelector(), WAR_DEPLOYMENT_CHAIN_PRIORITY);
+    public static final ServiceName WAR_DEPLOYMENT_CHAIN_SERVICE_NAME = DeploymentChain.SERVICE_NAME.append("war");
+
+    /**
+     * Activate the services required for service deployments.
+     * 
+     * @param context The service activator context
+     */
+    public void activate(final ServiceActivatorContext context) {
+        final BatchBuilder batchBuilder = context.getBatchBuilder();
+        batchBuilder.addServiceValueIfNotExist(DeploymentChainProviderService.SERVICE_NAME, new DeploymentChainProviderService());
+
+        final Value<DeploymentChain> deploymentChainValue = Values.immediateValue((DeploymentChain)new DeploymentChainImpl(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME.toString()))   ;
+        final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChainValue);
+        batchBuilder.addService(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME, deploymentChainService)
+            .addDependency(DeploymentChainProviderService.SERVICE_NAME, DeploymentChainProvider.class, new DeploymentChainProviderInjector<DeploymentChain>(deploymentChainValue, new WarDeploymentChainSelector(), WAR_DEPLOYMENT_CHAIN_PRIORITY));
+
+        addDeploymentProcessor(batchBuilder, new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new ManagedBeanDependencyProcessor(), ManagedBeanDependencyProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new ModuleConfigProcessor(), ModuleConfigProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new DeploymentModuleLoaderProcessor(), DeploymentModuleLoaderProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new ModuleDeploymentProcessor(), ModuleDeploymentProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new ManagedBeanAnnotationProcessor(), ManagedBeanAnnotationProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new ServiceDeploymentParsingProcessor(), ServiceDeploymentParsingProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new ManagedBeanDeploymentProcessor(), ManagedBeanDeploymentProcessor.PRIORITY);
     }
 
+    private <T extends DeploymentUnitProcessor> void addDeploymentProcessor(final BatchBuilder batchBuilder, final T deploymentUnitProcessor, final long priority) {
+        final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
+        batchBuilder.addService(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(deploymentUnitProcessor.getClass().getName()), deploymentUnitProcessorService)
+            .addDependency(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
+    }
 }
-
