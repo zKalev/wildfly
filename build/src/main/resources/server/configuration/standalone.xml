@@ -76,6 +76,7 @@
     </system-properties>
 
     <deployments>
+       <deployment name="ROOT.war" sha1="3402539ff706354bf7c87b342e78b0899e72d569"/>
     </deployments>
 
 </standalone>

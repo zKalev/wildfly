@@ -24,7 +24,8 @@ package org.jboss.as.web;
 import org.jboss.as.deployment.chain.DeploymentChain;
 import org.jboss.as.deployment.chain.DeploymentChainImpl;
 import org.jboss.as.deployment.chain.DeploymentChainProvider;
-import org.jboss.as.deployment.chain.JarDeploymentChainSelector;
+import org.jboss.as.web.deployment.WarDeploymentChainSelector;
+import org.jboss.as.web.deployment.WebParsingDeploymentProcessor;
 import org.jboss.as.deployment.managedbean.ManagedBeanAnnotationProcessor;
 import org.jboss.as.deployment.managedbean.ManagedBeanDependencyProcessor;
 import org.jboss.as.deployment.managedbean.ManagedBeanDeploymentProcessor;
@@ -61,7 +62,12 @@ class WebDeploymentActivator implements ServiceActivator {
         deploymentChain.addProcessor(new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
         deploymentChain.addProcessor(new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
         deploymentChain.addProcessor(new ManagedBeanDeploymentProcessor(), ManagedBeanDeploymentProcessor.PRIORITY);
-        DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain, new JarDeploymentChainSelector(), WAR_DEPLOYMENT_CHAIN_PRIORITY);
+        
+        
+        deploymentChain.addProcessor(new WebParsingDeploymentProcessor(),  WebParsingDeploymentProcessor.PRIORITY);
+        
+        
+        DeploymentChainProvider.INSTANCE.addDeploymentChain(deploymentChain, new WarDeploymentChainSelector(), WAR_DEPLOYMENT_CHAIN_PRIORITY);
     }
 
 }
