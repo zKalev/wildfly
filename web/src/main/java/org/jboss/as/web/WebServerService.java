@@ -33,6 +33,7 @@ import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
+import org.apache.catalina.Lifecycle;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Connector;
@@ -42,6 +43,7 @@ import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardService;
+import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Catalina;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
@@ -199,11 +201,11 @@ class WebServerService implements WebServer, Service<WebServer> {
         }
         // Add the default Servlet org.apache.catalina.servlets.DefaultServlet.class
         ContextConfig config = new ContextConfig();
-        Context rootContext = catalina.createContext("", root.getAbsolutePath(), config);
-        host.addChild(rootContext);
-        Mapper map = rootContext.getMapper();
-        map.setDefaultHostName(element.getName());
-        
+        Context rootContext = new StandardContext();
+        rootContext.setDocBase(root.getAbsolutePath());
+        rootContext.setPath("");
+        ((Lifecycle) rootContext).addLifecycleListener(config);
+         
         Wrapper wrapper = rootContext.createWrapper();
         wrapper.setName("DefaultServlet");
         wrapper.setLoadOnStartup(1);
@@ -212,7 +214,7 @@ class WebServerService implements WebServer, Service<WebServer> {
         wrapper.addInitParameter("listings", "true");
         rootContext.addChild(wrapper);
         
-        rootContext.addServletMapping("/*", "DefaultServlet");
+        rootContext.addServletMapping("/", "DefaultServlet");
         rootContext.setIgnoreAnnotations(true);
         rootContext.setPrivileged(true);
         rootContext.addWelcomeFile("index.html");
@@ -220,7 +222,8 @@ class WebServerService implements WebServer, Service<WebServer> {
         rootContext.setInstanceManager(new HackInstanceManager());
         Loader loader = new HackLoader();
         loader.setContainer(host);
-        rootContext.setLoader(loader);
+        rootContext.setLoader(loader); 
+        host.addChild(rootContext);
         
         Logger.getLogger("org.jboss.web").info("createHost: Done");
         return host;
