@@ -33,9 +33,7 @@ import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
-import org.apache.catalina.Lifecycle;
 import org.apache.catalina.Loader;
-import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.AprLifecycleListener;
 import org.apache.catalina.core.JasperListener;
@@ -43,11 +41,8 @@ import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardService;
-import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.Catalina;
-import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
-import org.apache.tomcat.util.http.mapper.Mapper;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -116,11 +111,11 @@ class WebServerService implements WebServer, Service<WebServer> {
         server.addLifecycleListener(new JasperListener());
         
         //  get "jboss-as-web-root" to have a ROOT static "webapp"
-        final File root = new File(System.getProperty("module.path"), "/org/jboss/as/jboss-as-web-root/noversion/ROOT");
+        // final File root = new File(System.getProperty("module.path"), "/org/jboss/as/jboss-as-web-root/noversion/ROOT");
  
         // Create the virtual hosts
         for(final WebVirtualServerElement virtual : virtualServers) {
-            engine.addChild(createHost(virtual, root));
+            engine.addChild(createHost(virtual));
         }
 
         try {
@@ -158,6 +153,18 @@ class WebServerService implements WebServer, Service<WebServer> {
     
     /** {@inheritDoc} */
     public void addContext(Context context) {
+    	Engine engine = (Engine) service.getContainer();
+    	for(final WebVirtualServerElement virtual : virtualServers) {
+    		Host host = (Host) engine.findChild(virtual.getName());
+    		
+    		context.setInstanceManager(new HackInstanceManager());
+    		Loader loader = new HackLoader();
+    		// Loader loader = context.getLoader();
+            loader.setContainer(host);
+            context.setLoader(loader); 
+            host.addChild(context);
+            Logger.getLogger("org.jboss.web").info("addContext: " + context + " to: " + host);
+    	}
     	
     }
     
@@ -181,7 +188,7 @@ class WebServerService implements WebServer, Service<WebServer> {
      * @param element the virtual server configuration
      * @return the host
      */
-    Host createHost(WebVirtualServerElement element, File root) {
+    Host createHost(WebVirtualServerElement element) {
         Logger.getLogger("org.jboss.web").info("createHost");
         final StandardHost host = new StandardHost();
         host.setName(element.getName());
@@ -199,32 +206,7 @@ class WebServerService implements WebServer, Service<WebServer> {
         if(rewriteConfiguration != null) {
             host.addValve(WebServerUtil.createRewriteValve(rewriteConfiguration));
         }
-        // Add the default Servlet org.apache.catalina.servlets.DefaultServlet.class
-        ContextConfig config = new ContextConfig();
-        Context rootContext = new StandardContext();
-        rootContext.setDocBase(root.getAbsolutePath());
-        rootContext.setPath("");
-        ((Lifecycle) rootContext).addLifecycleListener(config);
-         
-        Wrapper wrapper = rootContext.createWrapper();
-        wrapper.setName("DefaultServlet");
-        wrapper.setLoadOnStartup(1);
-        wrapper.setServletClass("org.apache.catalina.servlets.DefaultServlet");
-        wrapper.addInitParameter("debug","99");
-        wrapper.addInitParameter("listings", "true");
-        rootContext.addChild(wrapper);
-        
-        rootContext.addServletMapping("/", "DefaultServlet");
-        rootContext.setIgnoreAnnotations(true);
-        rootContext.setPrivileged(true);
-        rootContext.addWelcomeFile("index.html");
-        // Hacks...
-        rootContext.setInstanceManager(new HackInstanceManager());
-        Loader loader = new HackLoader();
-        loader.setContainer(host);
-        rootContext.setLoader(loader); 
-        host.addChild(rootContext);
-        
+
         Logger.getLogger("org.jboss.web").info("createHost: Done");
         return host;
     }
