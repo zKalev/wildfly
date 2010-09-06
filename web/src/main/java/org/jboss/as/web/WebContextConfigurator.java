@@ -23,6 +23,7 @@ package org.jboss.as.web;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Wrapper;
+import org.jboss.logging.Logger;
 
 /**
  * Internal helper for common context configurations. Sort of a replacement for the 
@@ -45,10 +46,9 @@ class WebContextConfigurator {
      * @param context the web context.
      */
     void process(Context context) {
-        // Enable resource serving, in case there is no existing "/" mapping
-        if(context.findServletMapping("/") != null) {
-            enableResourceService(context);    
-        }
+        // Enable resource serving
+        // TODO we need to check if there is a "/" mapping!?
+        enableResourceService(context);
     }
     
     /**

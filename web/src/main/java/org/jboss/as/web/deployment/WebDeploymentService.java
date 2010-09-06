@@ -47,9 +47,14 @@ class WebDeploymentService implements Service<Context>{
     /** {@inheritDoc}} */
     public synchronized void start(StartContext startContext) throws StartException {
         try {
+            context.create();
+        } catch(Exception e) {
+            throw new StartException("failed to create context", e);
+        }
+        try {
             context.start();
         } catch (LifecycleException e) {
-            throw new StartException(e);
+            throw new StartException("failed to start context", e);
         }
     }
 
@@ -58,7 +63,12 @@ class WebDeploymentService implements Service<Context>{
         try {
             context.stop();
         } catch (LifecycleException e) {
-            log.error("exception while stopping connector", e);
+            log.error("exception while stopping context", e);
+        }
+        try {
+            context.destroy();
+        } catch (Exception e) {
+            log.error("exception while destroying context", e);
         }
     }
 

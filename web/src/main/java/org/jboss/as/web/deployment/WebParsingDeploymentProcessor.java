@@ -42,12 +42,7 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private static final String WEB_XML = "WEB-INF/web.xml";
     
 	public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-		// JFC need to add stuff here...
-		Logger.getLogger("org.jboss.web").info("war: " + context.getName());
 		final VirtualFile deploymentRoot = VirtualFileAttachment.getVirtualFileAttachment(context);
-		Logger.getLogger("org.jboss.web").info("war: " + deploymentRoot.getName());
-		Logger.getLogger("org.jboss.web").info("war: " + deploymentRoot.getPathName());
-
 		final VirtualFile webXml = deploymentRoot.getChild(WEB_XML);
 		if(webXml.exists()) {
 		    Logger.getLogger("org.jboss.web").info("found web.xml " + webXml.getPathName());
