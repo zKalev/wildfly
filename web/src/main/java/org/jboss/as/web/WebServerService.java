@@ -194,10 +194,10 @@ class WebServerService implements WebServer, Service<WebServer> {
      * @return the host
      */
     Host createHost(WebVirtualServerElement element) {
-        log.info("createHost");
+        log.info("create Host: " + element.getName());
         final StandardHost host = new StandardHost();
         host.setName(element.getName());
-        host.setAppBase("/tmp"); // FIXME
+        host.setAppBase(System.getProperty("jboss.server.temp.dir", "/tmp")); // FIXME
         for(final String alias : element.getAliases()) {
             host.addAlias(alias);
         }
@@ -211,8 +211,6 @@ class WebServerService implements WebServer, Service<WebServer> {
         if(rewriteConfiguration != null) {
             host.addValve(WebServerUtil.createRewriteValve(rewriteConfiguration));
         }
-
-        log.info("createHost: Done");
         return host;
     }
 

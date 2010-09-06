@@ -23,7 +23,6 @@ package org.jboss.as.web;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Wrapper;
-import org.jboss.logging.Logger;
 
 /**
  * Internal helper for common context configurations. Sort of a replacement for the 
@@ -49,6 +48,8 @@ class WebContextConfigurator {
         // Enable resource serving
         // TODO we need to check if there is a "/" mapping!?
         enableResourceService(context);
+        // Enable JSP
+        enableJsp(context);
     }
     
     /**
@@ -58,7 +59,7 @@ class WebContextConfigurator {
      * @param context the web context
      */
     void enableResourceService(final Context context) {
-        final WebResourceServing resourcesConfig = containerConfig.getResourceServing();
+        final WebResourceServingElement resourcesConfig = containerConfig.getResourceServing();
         // Check disabled
         if(resourcesConfig != null && resourcesConfig.isDisabled()) {
             return; 
@@ -80,6 +81,28 @@ class WebContextConfigurator {
         
         context.addChild(wrapper);
         context.addServletMapping("/", "DefaultServlet");
+    }
+    
+    /**
+     * Enable JSP serving on a given context.
+     * 
+     * @param context the web context
+     */
+    void enableJsp(final Context context) {
+        final WebJspConfigurationElement configuration = containerConfig.getJspConfiguration();
+        if(configuration != null && configuration.isDisabled()) {
+            return;
+        }
+        final Wrapper wrapper = context.createWrapper();
+        wrapper.setName("jsp");
+        wrapper.setLoadOnStartup(3);
+        wrapper.setServletClass("org.apache.jasper.servlet.JspServlet");
+        if(configuration != null) {
+            // TODO add init params
+        }
+        context.addChild(wrapper);
+        context.addServletMapping("*.jsp", "jsp");
+        context.addServletMapping("*.jspx", "jsp");
     }
     
 }

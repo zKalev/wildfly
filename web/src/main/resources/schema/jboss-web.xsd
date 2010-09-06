@@ -56,36 +56,19 @@
   <xs:element name="config">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" maxOccurs="1" ref="filters"/>
-        <xs:element minOccurs="0" maxOccurs="1" ref="servlets"/>
+        <xs:element name="resource-serving" minOccurs="0" maxOccurs="1" type="resource-servingType"/>
+        <xs:element name="jsp-configuration" minOccurs="0" maxOccurs="1" type="jsp-configurationType"/>
+        <!--  
+        <xs:element minOccurs="0" maxOccurs="1" name="csrf"/>
+        <xs:element minOccurs="0" maxOccurs="1" name="webdav-fix"/>
+        -->
         <xs:element name="mime-mapping" minOccurs="0" maxOccurs="unbounded" type="propertiesWithRequiredValueType" />
         <xs:element name="welcome-file" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="filters">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element minOccurs="0" maxOccurs="1" name="ssi" type="ssi-filterType"/>
-        <xs:element minOccurs="0" maxOccurs="1" name="csrf"/>
-        <xs:element minOccurs="0" maxOccurs="1" name="webdav-fix"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-
-  <xs:element name="servlets">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element minOccurs="0" maxOccurs="1" name="default" type="default-servletType"/>
-        <xs:element minOccurs="0" maxOccurs="1" name="jsp" type="jsp-servletType"/>
-        <xs:element minOccurs="0" maxOccurs="1" name="ssi" type="ssi-servletType"/>
-        <xs:element minOccurs="0" maxOccurs="1" name="cgi" type="cgi-servletType"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-
-  <xs:complexType name="default-servletType">
+  <xs:complexType name="resource-servingType">
     <xs:attribute name="listings" default="true" type="boolean"/>
     <xs:attribute name="sendfile" default="49152"/>
     <xs:attribute name="file-encoding"/>
@@ -93,10 +76,12 @@
     <xs:attribute name="webdav" default="false" type="boolean"/>
     <xs:attribute name="secret"/>
     <xs:attribute name="max-depth" default="3"/>
+    <xs:attribute name="disabled" default="false" type="boolean""/>
   </xs:complexType>
 
-  <xs:complexType name="jsp-servletType">
+  <xs:complexType name="jsp-configurationType">
     <xs:attribute name="development" default="false" type="boolean"/>
+    <xs:attribute name="disabled" default="false" type="boolean"/>
     <xs:attribute name="keep-generated" default="true" type="boolean"/>
     <xs:attribute name="trim-spaces" default="false" type="boolean"/>
     <xs:attribute name="tag-pooling" default="true" type="boolean"/>
@@ -116,6 +101,7 @@
     <xs:attribute name="display-source-fragment" default="true" type="boolean"/>
   </xs:complexType>
 
+<!-- 
   <xs:complexType name="cgi-servletType">
     <xs:attribute name="debug" default="0"/>
     <xs:attribute name="cgi-path-prefix"/>
@@ -139,7 +125,8 @@
     <xs:attribute name="expires"/>
     <xs:attribute name="content-type-regex"/>
   </xs:complexType>
-
+ -->
+ 
   <xs:element name="connector">
     <xs:complexType>
       <xs:sequence>

@@ -22,11 +22,13 @@
 package org.jboss.as.web;
 
 import java.util.Collection;
+import java.util.TreeSet;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
+import org.jboss.as.model.PropertiesElement;
 import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -42,7 +44,10 @@ public class WebContainerConfigElement extends AbstractModelElement<WebContainer
     private static final long serialVersionUID = 1L;
 
     /** The resource serving configuration. */
-    private WebResourceServing resourceServing;
+    private WebResourceServingElement resourceServing;
+    private WebJspConfigurationElement jspConfiguration;
+    private PropertiesElement mimeMappings;
+    private Collection<String> welcomeFiles = new TreeSet<String>(); 
     
     protected WebContainerConfigElement(Location location) {
         super(location);
@@ -54,8 +59,20 @@ public class WebContainerConfigElement extends AbstractModelElement<WebContainer
         requireNoContent(reader);
     }
 
-    public WebResourceServing getResourceServing() {
+    public WebResourceServingElement getResourceServing() {
         return resourceServing;
+    }
+    
+    public WebJspConfigurationElement getJspConfiguration() {
+        return jspConfiguration;
+    }
+    
+    public PropertiesElement getMimeMappings() {
+        return mimeMappings;
+    }
+    
+    public Collection<String> getWelcomeFiles() {
+        return welcomeFiles;
     }
     
     /** {@inheritDoc} */

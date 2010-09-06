@@ -35,7 +35,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * 
  * @author Emanuel Muckenhuber
  */
-public class WebResourceServing extends AbstractModelElement<WebResourceServing> {
+public class WebResourceServingElement extends AbstractModelElement<WebResourceServingElement> {
 
     /** The serialVersionUID */
     private static final long serialVersionUID = 7112890068879082292L;
@@ -49,7 +49,7 @@ public class WebResourceServing extends AbstractModelElement<WebResourceServing>
     private int maxDepth;
     private boolean disabled = false;
     
-    protected WebResourceServing(XMLExtendedStreamReader reader) throws XMLStreamException {
+    protected WebResourceServingElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // FIXME read attributes
         requireNoContent(reader);
@@ -94,14 +94,14 @@ public class WebResourceServing extends AbstractModelElement<WebResourceServing>
     }
 
     @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<WebResourceServing>> target, WebResourceServing other) {
+    protected void appendDifference(Collection<AbstractModelUpdate<WebResourceServingElement>> target, WebResourceServingElement other) {
         // FIXME appendDifference
         
     }
 
     @Override
-    protected Class<WebResourceServing> getElementClass() {
-        return WebResourceServing.class;
+    protected Class<WebResourceServingElement> getElementClass() {
+        return WebResourceServingElement.class;
     }
 
     @Override
