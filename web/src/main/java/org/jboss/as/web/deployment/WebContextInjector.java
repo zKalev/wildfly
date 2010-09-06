@@ -19,47 +19,46 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.web;
+package org.jboss.as.web.deployment;
 
 import org.apache.catalina.Context;
-import org.apache.catalina.connector.Connector;
+import org.jboss.as.web.WebServer;
+import org.jboss.msc.inject.InjectionException;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.value.Value;
+import org.jboss.msc.value.Values;
 
 /**
- * The web server.
+ * {@code Injector} registering a web context at the web server.
  * 
  * @author Emanuel Muckenhuber
  */
-public interface WebServer {
+class WebContextInjector implements Injector<WebServer> {
 
-	/**
-	 * Add a web context.
-	 * 
-	 * @param hostName the host name
-	 * @param context the web context
-	 */
-	void addContext(String hostName, Context context);
-	
-	/**
-	 * Remove web context.
-	 *
-	 * @param hostName the host name
-	 * @param context the web context
-	 */
-	void removeContext(String hostName, Context context);
-	
-    /** 
-     * Add a connector.
-     * 
-     * @param connector the connector
-     */
-    void addConnector(Connector connector);
+    private WebServer server;
+    private final String hostName;
+    private final Value<Context> context;
 
-    /**
-     * Remove connector.
-     * 
-     * @param connector the connector
-     */
-    void removeConnector(Connector connector);
+    public WebContextInjector(String hostName, Value<Context> context) {
+        this.context = context;
+        this.hostName = hostName;
+    }
     
+    public WebContextInjector(String hostName, Context context) {
+        this.context = Values.immediateValue(context);
+        this.hostName = hostName;
+    }
+
+    public void inject(WebServer server) throws InjectionException {
+        server.addContext(hostName, context.getValue());
+        this.server = server;
+    }
+
+    public void uninject() {
+        if(server != null) {
+            server.removeContext(hostName, context.getValue());
+        }
+    }
+
 }
 

@@ -42,6 +42,9 @@ import org.jboss.as.deployment.service.ServiceDeploymentParsingProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessorService;
 import org.jboss.as.web.deployment.WarDeploymentChainSelector;
+import org.jboss.as.web.deployment.WebAnnotationDeploymentProcessor;
+import org.jboss.as.web.deployment.WebClassloadingDependencyProcessor;
+import org.jboss.as.web.deployment.WebMetaDataDeploymentProcessor;
 import org.jboss.as.web.deployment.WebParsingDeploymentProcessor;
 import org.jboss.msc.service.BatchBuilder;
 import org.jboss.msc.service.ServiceActivator;
@@ -72,7 +75,8 @@ class WebDeploymentActivator implements ServiceActivator {
         final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChainValue);
         batchBuilder.addService(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME, deploymentChainService)
             .addDependency(DeploymentChainProviderService.SERVICE_NAME, DeploymentChainProvider.class, new DeploymentChainProviderInjector<DeploymentChain>(deploymentChainValue, new WarDeploymentChainSelector(), WAR_DEPLOYMENT_CHAIN_PRIORITY));
-        
+
+        // Jar deployment processors ....
         addDeploymentProcessor(batchBuilder, new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ManagedBeanDependencyProcessor(), ManagedBeanDependencyProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ModuleDependencyProcessor(), ModuleDependencyProcessor.PRIORITY);
@@ -85,11 +89,13 @@ class WebDeploymentActivator implements ServiceActivator {
         addDeploymentProcessor(batchBuilder, new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ManagedBeanDeploymentProcessor(), ManagedBeanDeploymentProcessor.PRIORITY);
         
-        final WebParsingDeploymentProcessor processor = new WebParsingDeploymentProcessor();
-        final DeploymentUnitProcessorService<WebParsingDeploymentProcessor> deploymentUnitProcessorService = new DeploymentUnitProcessorService<WebParsingDeploymentProcessor>(processor);
-        batchBuilder.addService(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(WebParsingDeploymentProcessor.class.getName()), deploymentUnitProcessorService)
-            .addDependency(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<WebParsingDeploymentProcessor>(deploymentUnitProcessorService, WebParsingDeploymentProcessor.PRIORITY))
-            .addDependency(WebSubsystemElement.JBOSS_WEB_SERVER, WebServer.class, processor.getServer());
+        // Web specific deployment processors ....
+        
+        addDeploymentProcessor(batchBuilder, new WebParsingDeploymentProcessor(), WebParsingDeploymentProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new WebClassloadingDependencyProcessor(), WebClassloadingDependencyProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new WebAnnotationDeploymentProcessor(), WebAnnotationDeploymentProcessor.PRIORITY);
+        addDeploymentProcessor(batchBuilder, new WebMetaDataDeploymentProcessor(), WebMetaDataDeploymentProcessor.PRIORITY);
+
     }
 
     private <T extends DeploymentUnitProcessor> void addDeploymentProcessor(final BatchBuilder batchBuilder, final T deploymentUnitProcessor, final long priority) {

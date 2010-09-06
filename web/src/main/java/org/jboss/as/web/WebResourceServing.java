@@ -22,8 +22,6 @@
 package org.jboss.as.web;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -33,57 +31,82 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
+ * The web resource serving configuration.
+ * 
  * @author Emanuel Muckenhuber
  */
-public class WebVirtualServerElement extends AbstractModelElement<WebVirtualServerElement> {
+public class WebResourceServing extends AbstractModelElement<WebResourceServing> {
 
-    private String name;
-    private final Set<String> aliases = new HashSet<String>();
+    /** The serialVersionUID */
+    private static final long serialVersionUID = 7112890068879082292L;
+
+    private boolean listings;
+    private int sendfile;
+    private String fileEncoding;
+    private boolean readOnly;
+    private boolean webDav;
+    private String secret;
+    private int maxDepth;
+    private boolean disabled = false;
     
-    private WebAccessLogElement accessLog;
-    private WebRewriteElement rewrite;
-
-    protected WebVirtualServerElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+    protected WebResourceServing(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
-        // TODO Handle elements
-        this.name = "localhost";
+        // FIXME read attributes
         requireNoContent(reader);
     }
-
-    public String getName() {
-        return name;
+    
+    public boolean isListings() {
+        return listings;
     }
     
-    public Set<String> getAliases() {
-        return aliases;
+    public boolean isReadOnly() {
+        return readOnly;
     }
     
-    public WebAccessLogElement getAccessLog() {
-        return accessLog;
+    public boolean isWebDav() {
+        return webDav;
     }
     
-    public WebRewriteElement getRewrite() {
-        return rewrite;
+    public boolean isDisabled() {
+        return disabled;
     }
     
-    /** {@inheritDoc} */
+    public String getFileEncoding() {
+        return fileEncoding;
+    }
+    
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+    
+    public String getSecret() {
+        return secret;
+    }
+    
+    public int getSendfileSize() {
+        return sendfile;
+    }
+    
+    @Override
     public long elementHash() {
+        // FIXME elementHash
         return 0;
     }
 
-    /** {@inheritDoc} */
-    protected void appendDifference(Collection<AbstractModelUpdate<WebVirtualServerElement>> target, WebVirtualServerElement other) {
+    @Override
+    protected void appendDifference(Collection<AbstractModelUpdate<WebResourceServing>> target, WebResourceServing other) {
         // FIXME appendDifference
+        
     }
 
-    /** {@inheritDoc} */
-    protected Class<WebVirtualServerElement> getElementClass() {
-        return WebVirtualServerElement.class;
+    @Override
+    protected Class<WebResourceServing> getElementClass() {
+        return WebResourceServing.class;
     }
 
-    /** {@inheritDoc} */
+    @Override
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        streamWriter.writeEndElement();
+        // FIXME writeContent
     }
 
 }

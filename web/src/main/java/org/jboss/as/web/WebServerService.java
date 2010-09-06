@@ -21,19 +21,13 @@
 */
 package org.jboss.as.web;
 
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
 import javax.management.MBeanServer;
-import javax.naming.NamingException;
 
-import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
-import org.apache.catalina.Loader;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.AprLifecycleListener;
 import org.apache.catalina.core.JasperListener;
@@ -42,7 +36,6 @@ import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardService;
 import org.apache.catalina.startup.Catalina;
-import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -61,6 +54,10 @@ import org.jboss.msc.value.InjectedValue;
 class WebServerService implements WebServer, Service<WebServer> {
 
     private final static String JBOSS_WEB = "jboss.web";
+    private static final Logger log = Logger.getLogger("org.jboss.web");
+    
+    // FIXME
+    private static final String DEFAULT_HOST = "localhost";
     
     private Catalina catalina;
     private StandardService service;
@@ -68,8 +65,11 @@ class WebServerService implements WebServer, Service<WebServer> {
     private final Collection<WebVirtualServerElement> virtualServers;
     private InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
 
-    WebServerService(final Collection<WebVirtualServerElement> virtualServers) {
+    private final WebContextConfigurator contextConfigurator;
+
+    WebServerService(final WebContainerConfigElement containerConfig, final Collection<WebVirtualServerElement> virtualServers) {
         this.virtualServers = virtualServers;
+        this.contextConfigurator = new WebContextConfigurator(containerConfig);
     }
     
     /** {@inheritDoc} */
@@ -82,7 +82,7 @@ class WebServerService implements WebServer, Service<WebServer> {
         this.catalina = catalina;
         // TODO environment service, instead of sys prop?
         catalina.setCatalinaHome(System.getProperty("jboss.server.base.dir"));
-        Logger.getLogger("org.jboss.web").info("CatalinaHome: " + catalina.getCatalinaHome());
+        log.info("CatalinaHome: " + catalina.getCatalinaHome());
         // getRegistry().registerComponent(catalina, new ObjectName(JBOSS_WEB_NAME + ":type=Catalina"),
         // "org.apache.catalina.startup.Catalina");
         
@@ -100,7 +100,7 @@ class WebServerService implements WebServer, Service<WebServer> {
         final Engine engine = new StandardEngine();
         engine.setName(JBOSS_WEB);
         engine.setService(service);
-        engine.setDefaultHost("localhost"); // HACK
+        engine.setDefaultHost(DEFAULT_HOST); // HACK
         
         service.setContainer(engine);
         
@@ -152,26 +152,31 @@ class WebServerService implements WebServer, Service<WebServer> {
     }
     
     /** {@inheritDoc} */
-    public void addContext(Context context) {
-    	Engine engine = (Engine) service.getContainer();
-    	for(final WebVirtualServerElement virtual : virtualServers) {
-    		Host host = (Host) engine.findChild(virtual.getName());
-    		
-    		context.setInstanceManager(new HackInstanceManager());
-    		Loader loader = new HackLoader();
-    		// Loader loader = context.getLoader();
-            loader.setContainer(host);
-            context.setLoader(loader); 
-            host.addChild(context);
-            Logger.getLogger("org.jboss.web").info("addContext: " + context + " to: " + host);
+    public synchronized void addContext(String hostName, final Context context) {
+        hostName = hostName == null ? DEFAULT_HOST : hostName;
+    	final Engine engine = (Engine) service.getContainer();
+    	final Host host = (Host) engine.findChild(hostName);
+    	if(host == null) {
+    	    throw new IllegalStateException("Host not configured " + hostName);
     	}
-    	
+		// Process container wide context configuration 
+		contextConfigurator.process(context);
+		// Add context to host
+        context.getLoader().setContainer(host);
+        host.addChild(context);
+        
+        log.info("addContext: " + context + " to: " + host);
     }
     
     /** {@inheritDoc} */
-    public void removeContext(Context context) {
-    	// TODO Auto-generated method stub
-    	
+    public synchronized void removeContext(String hostName, final Context context) {
+        hostName = hostName == null ? DEFAULT_HOST : hostName;
+        final Engine engine = (Engine) service.getContainer();
+        final Host host = (Host) engine.findChild(hostName);
+        if(host == null) {
+            throw new IllegalStateException("Host not configured " + hostName);
+        }
+        host.removeChild(context);
     }
     
     InjectedValue<MBeanServer> getMbeanServer() {
@@ -189,10 +194,10 @@ class WebServerService implements WebServer, Service<WebServer> {
      * @return the host
      */
     Host createHost(WebVirtualServerElement element) {
-        Logger.getLogger("org.jboss.web").info("createHost");
+        log.info("createHost");
         final StandardHost host = new StandardHost();
         host.setName(element.getName());
-        host.setAppBase("/tmp");
+        host.setAppBase("/tmp"); // FIXME
         for(final String alias : element.getAliases()) {
             host.addAlias(alias);
         }
@@ -207,101 +212,9 @@ class WebServerService implements WebServer, Service<WebServer> {
             host.addValve(WebServerUtil.createRewriteValve(rewriteConfiguration));
         }
 
-        Logger.getLogger("org.jboss.web").info("createHost: Done");
+        log.info("createHost: Done");
         return host;
     }
-    
-    class HackInstanceManager implements InstanceManager {
 
-    	ClassLoader getClassLoader() {
-    		return WebServer.class.getClassLoader();
-    	}
-    	
-		@Override
-		public void destroyInstance(Object arg0) throws IllegalAccessException,
-				InvocationTargetException {
-			
-		}
-
-		@Override
-		public Object newInstance(String arg0) throws IllegalAccessException,
-				InvocationTargetException, NamingException,
-				InstantiationException, ClassNotFoundException {
-			return getClassLoader().loadClass(arg0).newInstance();
-		}
-
-		@Override
-		public Object newInstance(Class<?> arg0) throws IllegalAccessException,
-				InvocationTargetException, NamingException,
-				InstantiationException {
-			return arg0.newInstance();
-		}
-
-		@Override
-		public void newInstance(Object arg0) throws IllegalAccessException,
-				InvocationTargetException, NamingException {
-
-			// nada
-		}
-
-		@Override
-		public Object newInstance(String arg0, ClassLoader arg1)
-				throws IllegalAccessException, InvocationTargetException,
-				NamingException, InstantiationException, ClassNotFoundException {
-			return arg1.loadClass(arg0).newInstance();
-		}
-    	
-    }
-    
-    class HackLoader implements Loader {
-
-    	private Container container;
-    	
-		@Override
-		public void addPropertyChangeListener(PropertyChangeListener arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void addRepository(String arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void backgroundProcess() {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public ClassLoader getClassLoader() {
-			return WebServer.class.getClassLoader();
-		}
-
-		@Override
-		public Container getContainer() {
-			return this.container;
-		}
-
-		@Override
-		public String getInfo() {
-			return "toto";
-		}
-
-		@Override
-		public void removePropertyChangeListener(PropertyChangeListener arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void setContainer(Container arg0) {
-			this.container = arg0;
-		}
-    	
-    }
-    
 }
 

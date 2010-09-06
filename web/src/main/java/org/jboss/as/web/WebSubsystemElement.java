@@ -98,6 +98,9 @@ public class WebSubsystemElement extends AbstractSubsystemElement<WebSubsystemEl
             	default: throw unexpectedElement(reader);
             }
         }
+        if(config == null) {
+            this.config = new WebContainerConfigElement(getLocation());
+        }
 	}
 
 	/** {@inheritDoc} */
@@ -144,9 +147,9 @@ public class WebSubsystemElement extends AbstractSubsystemElement<WebSubsystemEl
 
 	/** {@inheritDoc} */
 	public void activate(ServiceActivatorContext context) {
-
+	    // Add the web server
 	    final BatchServiceBuilder<WebServer> service = context.getBatchBuilder()
-	        .addService(JBOSS_WEB_SERVER, new WebServerService(this.virtuals.values()));
+	        .addService(JBOSS_WEB_SERVER, new WebServerService(this.config, this.virtuals.values()));
 	    // TODO dependency on MBeanServer 
 	    service.setLocation(getLocation());
 	    service.setInitialMode(Mode.ON_DEMAND);
@@ -154,7 +157,7 @@ public class WebSubsystemElement extends AbstractSubsystemElement<WebSubsystemEl
 	    for(final WebConnectorElement connector : this.connectors.values()) {
 	        connector.activate(context);
 	    }
-	    
+
 	    new WebDeploymentActivator().activate(context);
 	}
 }

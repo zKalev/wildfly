@@ -31,6 +31,7 @@
     <dependencies>
         <module group="javax.servlet" name="api"/>
         <module group="javax.servlet.jsp" name="api"/>
+        <module group="org.jboss" name="jandex"/>
         <module group="org.jboss" name="staxmapper"/>
         <module group="org.jboss.as" name="jboss-as-domain"/>
         <module group="org.jboss.as" name="jboss-as-threads"/>

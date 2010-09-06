@@ -27,10 +27,13 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.model.AbstractModelElement;
 import org.jboss.as.model.AbstractModelUpdate;
+import org.jboss.msc.service.Location;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
+ * The web container configuration.
+ * 
  * @author Emanuel Muckenhuber
  */
 public class WebContainerConfigElement extends AbstractModelElement<WebContainerConfigElement> {
@@ -38,12 +41,23 @@ public class WebContainerConfigElement extends AbstractModelElement<WebContainer
     /** The serialVersionUID */
     private static final long serialVersionUID = 1L;
 
+    /** The resource serving configuration. */
+    private WebResourceServing resourceServing;
+    
+    protected WebContainerConfigElement(Location location) {
+        super(location);
+    }
+    
     protected WebContainerConfigElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         // TODO Handle elements
         requireNoContent(reader);
     }
 
+    public WebResourceServing getResourceServing() {
+        return resourceServing;
+    }
+    
     /** {@inheritDoc} */
     public long elementHash() {
         return 0;

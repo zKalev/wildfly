@@ -1,62 +1,59 @@
+/*
+* JBoss, Home of Professional Open Source
+* Copyright 2010, Red Hat Inc., and individual contributors as indicated
+* by the @authors tag. See the copyright.txt in the distribution for a
+* full listing of individual contributors.
+*
+* This is free software; you can redistribute it and/or modify it
+* under the terms of the GNU Lesser General Public License as
+* published by the Free Software Foundation; either version 2.1 of
+* the License, or (at your option) any later version.
+*
+* This software is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public
+* License along with this software; if not, write to the Free
+* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+*/
 package org.jboss.as.web.deployment;
 
-import java.io.IOException;
-
-import org.apache.catalina.Context;
-import org.apache.catalina.Lifecycle;
-import org.apache.catalina.Wrapper;
-import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.startup.ContextConfig;
+import org.jboss.as.deployment.AttachmentKey;
+import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.web.WebServer;
+import org.jboss.as.web.metadata.WebMetaData;
 import org.jboss.logging.Logger;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.VirtualFile;
 
+/**
+ * @author Jean-Frederic Clere
+ */
 public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
-	public static final long PRIORITY = 300L;
-	private InjectedValue<WebServer> server = new InjectedValue<WebServer>();
-	@Override
+	
+    public static final long PRIORITY = DeploymentPhases.PARSE_DESCRIPTORS.plus(300L);
+    public static final AttachmentKey<WebMetaData> ATTACHMENT_KEY = new AttachmentKey<WebMetaData>(WebMetaData.class);
+
+    private static final String WEB_XML = "WEB-INF/web.xml";
+    
 	public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
 		// JFC need to add stuff here...
 		Logger.getLogger("org.jboss.web").info("war: " + context.getName());
 		final VirtualFile deploymentRoot = VirtualFileAttachment.getVirtualFileAttachment(context);
 		Logger.getLogger("org.jboss.web").info("war: " + deploymentRoot.getName());
 		Logger.getLogger("org.jboss.web").info("war: " + deploymentRoot.getPathName());
-		// deploymentRoot.getPhysicalFile();
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        // Add the default Servlet org.apache.catalina.servlets.DefaultServlet.class
-        ContextConfig config = new ContextConfig();
-        Context rootContext = new StandardContext();
-        try {
-			rootContext.setDocBase(deploymentRoot.getPhysicalFile().getAbsolutePath());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        rootContext.setPath("");
-        ((Lifecycle) rootContext).addLifecycleListener(config);
-         
-        Wrapper wrapper = rootContext.createWrapper();
-        wrapper.setName("DefaultServlet");
-        wrapper.setLoadOnStartup(1);
-        wrapper.setServletClass("org.apache.catalina.servlets.DefaultServlet");
-        wrapper.addInitParameter("debug","99");
-        wrapper.addInitParameter("listings", "true");
-        rootContext.addChild(wrapper);
-        
-        rootContext.addServletMapping("/", "DefaultServlet");
-        rootContext.setIgnoreAnnotations(true);
-        rootContext.setPrivileged(true);
-        rootContext.addWelcomeFile("index.html");
-        server.getValue().addContext(rootContext);
-	}
 
-	public InjectedValue<WebServer> getServer() {
-		return server;
+		final VirtualFile webXml = deploymentRoot.getChild(WEB_XML);
+		if(webXml.exists()) {
+		    Logger.getLogger("org.jboss.web").info("found web.xml " + webXml.getPathName());
+		    // Parse web.xml
+		    context.putAttachment(ATTACHMENT_KEY, new WebMetaData());
+		}
 	}
 	
 }

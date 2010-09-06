@@ -19,47 +19,12 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.web;
-
-import org.apache.catalina.Context;
-import org.apache.catalina.connector.Connector;
+package org.jboss.as.web.metadata;
 
 /**
- * The web server.
- * 
  * @author Emanuel Muckenhuber
  */
-public interface WebServer {
+public class JBossWebMetaData {
 
-	/**
-	 * Add a web context.
-	 * 
-	 * @param hostName the host name
-	 * @param context the web context
-	 */
-	void addContext(String hostName, Context context);
-	
-	/**
-	 * Remove web context.
-	 *
-	 * @param hostName the host name
-	 * @param context the web context
-	 */
-	void removeContext(String hostName, Context context);
-	
-    /** 
-     * Add a connector.
-     * 
-     * @param connector the connector
-     */
-    void addConnector(Connector connector);
-
-    /**
-     * Remove connector.
-     * 
-     * @param connector the connector
-     */
-    void removeConnector(Connector connector);
-    
 }
 
