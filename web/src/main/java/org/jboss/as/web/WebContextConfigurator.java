@@ -47,7 +47,7 @@ class WebContextConfigurator {
     void process(Context context) {
         // Enable resource serving
         // TODO we need to check if there is a "/" mapping!?
-        enableResourceService(context);
+        enableStaticResouces(context);
         // Enable JSP
         enableJsp(context);
     }
@@ -58,8 +58,8 @@ class WebContextConfigurator {
      * 
      * @param context the web context
      */
-    void enableResourceService(final Context context) {
-        final WebResourceServingElement resourcesConfig = containerConfig.getResourceServing();
+    void enableStaticResouces(final Context context) {
+        final WebStaticResourcesElement resourcesConfig = containerConfig.getResourceServing();
         // Check disabled
         if(resourcesConfig != null && resourcesConfig.isDisabled()) {
             return; 

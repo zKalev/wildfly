@@ -31,12 +31,12 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * The web resource serving configuration.
+ * The configuration element for serving static resources in a web application.
  * 
  * @author Emanuel Muckenhuber
  * @author Jean-Frederic Clere
  */
-public class WebResourceServingElement extends AbstractModelElement<WebResourceServingElement> {
+public class WebStaticResourcesElement extends AbstractModelElement<WebStaticResourcesElement> {
 
     /** The serialVersionUID */
     private static final long serialVersionUID = 7112890068879082292L;
@@ -50,7 +50,7 @@ public class WebResourceServingElement extends AbstractModelElement<WebResourceS
     private int maxDepth;
     private boolean disabled = false;
     
-    protected WebResourceServingElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+    protected WebStaticResourcesElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
         String listings = null;
         String sendfile = null;
@@ -146,14 +146,14 @@ public class WebResourceServingElement extends AbstractModelElement<WebResourceS
     }
 
     @Override
-    protected void appendDifference(Collection<AbstractModelUpdate<WebResourceServingElement>> target, WebResourceServingElement other) {
+    protected void appendDifference(Collection<AbstractModelUpdate<WebStaticResourcesElement>> target, WebStaticResourcesElement other) {
         // FIXME appendDifference
         
     }
 
     @Override
-    protected Class<WebResourceServingElement> getElementClass() {
-        return WebResourceServingElement.class;
+    protected Class<WebStaticResourcesElement> getElementClass() {
+        return WebStaticResourcesElement.class;
     }
 
     @Override

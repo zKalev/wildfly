@@ -44,7 +44,7 @@ public class WebContainerConfigElement extends AbstractModelElement<WebContainer
     private static final long serialVersionUID = 1L;
 
     /** The resource serving configuration. */
-    private WebResourceServingElement resourceServing;
+    private WebStaticResourcesElement resourceServing;
     private WebJspConfigurationElement jspConfiguration;
     private PropertiesElement mimeMappings;
     private Collection<String> welcomeFiles = new TreeSet<String>(); 
@@ -64,7 +64,7 @@ public class WebContainerConfigElement extends AbstractModelElement<WebContainer
         	final Element element = Element.forName(reader.getLocalName());
         	switch(element) {
 				case RESOURCESERVING: {
-       			    final WebResourceServingElement resourceServing = new WebResourceServingElement(reader);
+       			    final WebStaticResourcesElement resourceServing = new WebStaticResourcesElement(reader);
     			    if(this.resourceServing != null) {
     			    	throw new XMLStreamException("An element of this type named 'resource-serving' has already been declared", reader.getLocation());
     			    }
@@ -97,7 +97,7 @@ public class WebContainerConfigElement extends AbstractModelElement<WebContainer
         }
     }
 
-    public WebResourceServingElement getResourceServing() {
+    public WebStaticResourcesElement getResourceServing() {
         return resourceServing;
     }
     

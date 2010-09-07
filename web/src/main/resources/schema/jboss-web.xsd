@@ -56,7 +56,13 @@
   <xs:element name="config">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="resource-serving" minOccurs="0" maxOccurs="1" type="resource-servingType"/>
+        <xs:element name="static-resources" minOccurs="0" maxOccurs="1" type="static-resourcesType">
+            <xs:annotation>
+                <xs:documentation>A default service for all web applications, that serves static resources.
+                    It processes all requests that are not mapped to other servlets with servlet mappings.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:element>
         <xs:element name="jsp-configuration" minOccurs="0" maxOccurs="1" type="jsp-configurationType"/>
         <!--  
         <xs:element minOccurs="0" maxOccurs="1" name="csrf"/>
@@ -68,7 +74,7 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:complexType name="resource-servingType">
+  <xs:complexType name="static-resourcesType">
     <xs:attribute name="listings" default="true" type="boolean"/>
     <xs:attribute name="sendfile" default="49152"/>
     <xs:attribute name="file-encoding"/>
