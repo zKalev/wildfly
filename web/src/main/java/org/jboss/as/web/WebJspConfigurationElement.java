@@ -67,7 +67,111 @@ public class WebJspConfigurationElement extends AbstractModelElement<WebJspConfi
     
     protected WebJspConfigurationElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
-        // FIXME parsing
+        String development = null;
+        String disabled = null;
+        String keep_generated = null;
+        String trim_spaces = null;
+        String tag_pooling = null;
+        String mapped_file = null;
+        String check_interval = null;
+        String modification_test_interval = null;
+        String recompile_on_fail = null;
+        String smap = null;
+        String dump_smap = null;
+        String generate_strings_as_char_arrays = null;
+        String error_on_use_bean_invalid_class_attribute = null;
+        String scratch_dir = null;
+        String source_vm = null;
+        String target_vm = null;
+        String java_encoding = null;
+        String x_powered_by = null;
+        String display_source_fragment = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case DEVELOPMENT:
+                    	development = value;
+                   		break;
+                    case DISABLED:
+                    	disabled = value;
+                    	break;
+                    case KEEP_GENERATED:
+                    	keep_generated = value;
+                    	break;
+                    case TRIM_SPACES:
+                    	trim_spaces = value;
+                    	break;
+                    case TAG_POOLING:
+                    	tag_pooling = value;
+                    	break;
+                    case MAPPED_FILE:
+                    	mapped_file = value;
+                    	break;
+                    case CHECK_INTERVAL:
+                    	check_interval = value;
+                    	break;
+                    case MODIFIFICATION_TEST_INTERVAL:
+                    	modification_test_interval = value;
+                    	break;
+                    case RECOMPILE_ON_FAIL:
+                    	recompile_on_fail = value;
+                    case SMAP:
+                    	smap = value;
+                    	break;
+                    case DUMP_SMAP:
+                    	dump_smap = value;
+                    case GENERATE_STRINGS_AS_CHAR_ARRAYS:
+                    	generate_strings_as_char_arrays = value;
+                    	break;
+                    case ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT:
+                    	error_on_use_bean_invalid_class_attribute = value;
+                    	break;
+                    case SCRATCH_DIR:
+                    	scratch_dir = value;
+                        break;
+                    case SOURCE_VM:
+                    	source_vm = value;
+                    	break;
+                    case TARGET_VM:
+                    	target_vm = value;
+                    	break;
+                    case JAVA_ENCODING:
+                    	java_encoding = value;
+                    	break;
+                    case X_POWERED_BY:
+                    	x_powered_by = value;
+                    	break;
+                    case DISPLAY_SOOURCE_FRAGMENT:
+                    	display_source_fragment = value;
+                    	break;
+                    default: unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        this.development = development == null ? false : Boolean.valueOf(development);
+        this.disabled = disabled == null ? false : Boolean.valueOf(disabled);
+        this.keepGenerated = keep_generated == null ? true : Boolean.valueOf(keep_generated);
+        this.trimSpaces = trim_spaces == null ? false : Boolean.valueOf(trim_spaces);
+        this.tagPooling = tag_pooling == null ? true : Boolean.valueOf(tag_pooling);
+        this.mappedFile = mapped_file == null ? true : Boolean.valueOf(mapped_file);
+        this.checkInterval = check_interval == null ? 0 : Integer.valueOf(check_interval);
+        this.modificationTestInterval = modification_test_interval == null ? 4 : Integer.valueOf(modification_test_interval);
+        this.recompileOnFail = recompile_on_fail == null ? false : Boolean.valueOf(recompile_on_fail);
+        this.smap = smap == null ? true : Boolean.valueOf(smap);
+        this.dumpSmap = dump_smap == null ? false : Boolean.valueOf(dump_smap);
+        this.generateStringsAsCharArrays = generate_strings_as_char_arrays == null? false :Boolean.valueOf( generate_strings_as_char_arrays);
+        this.errorOnInvalidClassAttribute = error_on_use_bean_invalid_class_attribute == null ? false :Boolean.valueOf(error_on_use_bean_invalid_class_attribute);
+        this.scratchDir = scratch_dir;
+        this.sourceVM = source_vm == null ? "1.5" : source_vm;
+        this.targetVM = target_vm == null ? "1.5" : target_vm;
+        this.javaEncoding = java_encoding  == null ? "UTF8" : java_encoding;
+        this.XPoweredBy = x_powered_by == null ? true : Boolean.valueOf(x_powered_by);
+        this.displaySourceFragment = display_source_fragment == null ? true : Boolean.valueOf(display_source_fragment);
         requireNoContent(reader);
     }
 

@@ -33,10 +33,15 @@ enum Element {
 
     CONNECTOR("connector"),
     CONTAINER_CONFIG("config"),
-    
+    	
     SUBSYSTEM("subsystem"),
     
     VIRTUAL_SERVER("virtual-server"),
+    
+    RESOURCESERVING("resourceServing"),
+    JSP_CONFIGURATION("jsp-configuration"),
+    MIME_MAPPING("mime-mapping"),
+    WELCOME_FILE("welcome-file"),
     ;
 
     private final String name;

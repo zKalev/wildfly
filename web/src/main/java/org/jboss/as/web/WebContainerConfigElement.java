@@ -36,7 +36,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * The web container configuration.
  * 
- * @author Emanuel Muckenhuber
+ * @author Jean-Frederic Clere
  */
 public class WebContainerConfigElement extends AbstractModelElement<WebContainerConfigElement> {
 
@@ -55,8 +55,46 @@ public class WebContainerConfigElement extends AbstractModelElement<WebContainer
     
     protected WebContainerConfigElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
-        // TODO Handle elements
-        requireNoContent(reader);
+        // no attributes
+        if (reader.getAttributeCount() > 0) {
+            throw unexpectedAttribute(reader, 0);
+        }
+        // elements
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+        	final Element element = Element.forName(reader.getLocalName());
+        	switch(element) {
+				case RESOURCESERVING: {
+       			    final WebResourceServingElement resourceServing = new WebResourceServingElement(reader);
+    			    if(this.resourceServing != null) {
+    			    	throw new XMLStreamException("An element of this type named 'resource-serving' has already been declared", reader.getLocation());
+    			    }
+    			    this.resourceServing = resourceServing;
+					break;
+				}
+				case JSP_CONFIGURATION: {
+      			    final WebJspConfigurationElement jspConfiguration = new WebJspConfigurationElement(reader);
+    			    if(this.jspConfiguration != null) {
+    			    	throw new XMLStreamException("An element of this type named 'jsp-configuration' has already been declared", reader.getLocation());
+    			    }
+    			    this.jspConfiguration = jspConfiguration;
+					break;
+				}
+				case MIME_MAPPING: {
+      			    final PropertiesElement mimeMappings = new PropertiesElement(reader);
+    			    if(this.mimeMappings != null) {
+    			    	throw new XMLStreamException("An element of this type named 'mime-mapping' has already been declared", reader.getLocation());
+    			    }
+    			    this.mimeMappings = mimeMappings;
+					break;
+				}
+				case WELCOME_FILE: {
+					final String welcomeFile = reader.getElementText();
+					this.welcomeFiles.add(welcomeFile);
+					break;
+				}
+				default: throw unexpectedElement(reader);
+        	}
+        }
     }
 
     public WebResourceServingElement getResourceServing() {

@@ -101,7 +101,7 @@ public class WebConnectorElement extends AbstractModelElement<WebConnectorElemen
         this.bindingRef = bindingRef;
         this.scheme = scheme;
         this.executorRef = executorRef;
-        this.enabled = enabled == null ? true : Boolean.valueOf(enabled);;
+        this.enabled = enabled == null ? true : Boolean.valueOf(enabled);
         // Handle elements
         requireNoContent(reader);
     }

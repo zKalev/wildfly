@@ -26,6 +26,7 @@ import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
+ * @author Jean-Frederic Clere
  */
 enum Attribute {
     UNKNOWN(null),
@@ -39,7 +40,35 @@ enum Attribute {
     
     PROTOCOL("protocol"),
     
-    SCHEME("scheme")
+    SCHEME("scheme"),
+    
+    LISTINGS("listings"),
+    SENDFILE("sendfile"),
+    FILE_ENCONDING("file-encoding"),
+    READ_ONLY("read-only"),
+    WEBDAV("webdav"),
+    SECRET("secret"),
+    MAX_DEPTH("max-depth"),
+    DISABLED("disabled"),
+    
+    DEVELOPMENT("development"),
+    KEEP_GENERATED("keep-generated"),
+    TRIM_SPACES("trim-spaces"),
+    TAG_POOLING("tag-pooling"),
+    MAPPED_FILE("mapped-file"),
+    CHECK_INTERVAL("check-interval"),
+    MODIFIFICATION_TEST_INTERVAL("modification-test-interval"),
+    RECOMPILE_ON_FAIL("recompile-on-fail"),
+    SMAP("smap"),
+    DUMP_SMAP("dump-smap"),
+    GENERATE_STRINGS_AS_CHAR_ARRAYS("generate-strings-as-char-arrays"),
+    ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT("error-on-use-bean-invalid-class-attribute"),
+    SCRATCH_DIR("scratch-dir"),
+    SOURCE_VM("source-vm"),
+    TARGET_VM("target-vm"),
+    JAVA_ENCODING("java-encoding"),
+    X_POWERED_BY("x-powered-by"),
+    DISPLAY_SOOURCE_FRAGMENT("display-source-fragment")
     ;
     private final String name;
 

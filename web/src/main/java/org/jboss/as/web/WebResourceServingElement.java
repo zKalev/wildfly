@@ -34,6 +34,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  * The web resource serving configuration.
  * 
  * @author Emanuel Muckenhuber
+ * @author Jean-Frederic Clere
  */
 public class WebResourceServingElement extends AbstractModelElement<WebResourceServingElement> {
 
@@ -51,7 +52,58 @@ public class WebResourceServingElement extends AbstractModelElement<WebResourceS
     
     protected WebResourceServingElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
-        // FIXME read attributes
+        String listings = null;
+        String sendfile = null;
+        String fileEncoding = null;
+        String readOnly = null;
+        String webDav = null;
+        String secret = null;
+        String maxDepth = null;
+        String disabled = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case LISTINGS:
+                    	listings = value;
+                        break;
+                    case SENDFILE:
+                        sendfile = value;
+                        break;
+                    case FILE_ENCONDING:
+                    	fileEncoding = value;
+                    case READ_ONLY:
+                    	readOnly = value;
+                    	break;
+                    case WEBDAV:
+                    	webDav = value;
+                		break;
+                    case SECRET:
+                    	secret= value;
+                		break;
+                    case MAX_DEPTH:
+                    	maxDepth = value;
+                		break;
+                    case DISABLED:
+                    	disabled = value;
+                		break;
+                    default: unexpectedAttribute(reader, i);
+                }
+                this.listings = listings == null ? true : Boolean.valueOf(listings);
+                this.sendfile = sendfile == null ? 49152 : Integer.valueOf(listings);
+                this.fileEncoding = fileEncoding;
+                this.readOnly = readOnly  == null ? true : Boolean.valueOf(readOnly);
+                this.webDav = webDav == null ? false : Boolean.valueOf(webDav);
+                this.secret = secret;
+                this.maxDepth = maxDepth == null ? 3 : Integer.valueOf(maxDepth);
+                this.disabled = disabled == null ? false : Boolean.valueOf(disabled);
+            }
+        }
+
         requireNoContent(reader);
     }
     
