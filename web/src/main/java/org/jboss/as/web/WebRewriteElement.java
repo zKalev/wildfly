@@ -35,8 +35,13 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class WebRewriteElement extends AbstractModelElement<WebRewriteElement> {
 
+    /** The serialVersionUID */
+    private static final long serialVersionUID = 1L;
+
     protected WebRewriteElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
+        // FIXME
+        requireNoContent(reader);
     }
 
     /** {@inheritDoc} */

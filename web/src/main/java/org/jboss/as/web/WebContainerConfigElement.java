@@ -63,7 +63,7 @@ public class WebContainerConfigElement extends AbstractModelElement<WebContainer
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
         	final Element element = Element.forName(reader.getLocalName());
         	switch(element) {
-				case RESOURCESERVING: {
+				case STATIC_RESOURCES: {
        			    final WebStaticResourcesElement resourceServing = new WebStaticResourcesElement(reader);
     			    if(this.resourceServing != null) {
     			    	throw new XMLStreamException("An element of this type named 'resource-serving' has already been declared", reader.getLocation());

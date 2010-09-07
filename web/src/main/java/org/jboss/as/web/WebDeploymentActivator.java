@@ -90,7 +90,6 @@ class WebDeploymentActivator implements ServiceActivator {
         addDeploymentProcessor(batchBuilder, new ManagedBeanDeploymentProcessor(), ManagedBeanDeploymentProcessor.PRIORITY);
         
         // Web specific deployment processors ....
-        
         addDeploymentProcessor(batchBuilder, new WebParsingDeploymentProcessor(), WebParsingDeploymentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WebClassloadingDependencyProcessor(), WebClassloadingDependencyProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WebAnnotationDeploymentProcessor(), WebAnnotationDeploymentProcessor.PRIORITY);

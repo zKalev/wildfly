@@ -143,6 +143,7 @@
       <xs:attributeGroup ref="web-connector-attlist"/>
     </xs:complexType>
   </xs:element>
+  
   <xs:attributeGroup name="web-connector-attlist">
     <xs:attribute name="name" use="required"/>
     <xs:attribute name="native" default="true" type="boolean"/>
@@ -159,15 +160,19 @@
   <xs:element name="virtual-server">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="access-log" minOccurs="0" type="http-access-logType"/>
-        <xs:element name="connector" minOccurs="1" maxOccurs="unbounded"/>
         <xs:element name="alias" minOccurs="0" maxOccurs="unbounded">
             <xs:annotation>
                 <xs:documentation>Vhost aliases</xs:documentation>
             </xs:annotation>
         </xs:element>
-        <xs:element name="rewrite" minOccurs="0" type="http-rewriteType"/>
+        <!-- 
+        // Needs some logic in jboss.web 
+        <xs:element name="connector" minOccurs="1" maxOccurs="unbounded"/>
+        // properties used for ??
         <xs:element name="properties" type="propertiesWithRequiredValueType" minOccurs="0"/>
+                 -->
+        <xs:element name="access-log" minOccurs="0" type="http-access-logType"/>
+        <xs:element name="rewrite" minOccurs="0" type="http-rewriteType"/>
       </xs:sequence>
       <xs:attributeGroup ref="virtual-server-attlist"/>
     </xs:complexType>
@@ -178,7 +183,10 @@
             <xs:documentation>Main vhost name</xs:documentation>
         </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="default-web-module" default="ROOT.war" />
+    <!--
+        TODO - what do we do with the default webapp ? 
+        <xs:attribute name="default-web-module" default="ROOT.war" />
+     -->
   </xs:attributeGroup>
 
     <xs:complexType name="http-access-logType">

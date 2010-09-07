@@ -32,43 +32,59 @@ enum Attribute {
     UNKNOWN(null),
 
     BINDING("binding"),
-    
-    ENABLED("enabled"),
-    EXECUTOR("executor"),
-    
-    NAME("name"),
-    
-    PROTOCOL("protocol"),
-    
-    SCHEME("scheme"),
-    
-    LISTINGS("listings"),
-    SENDFILE("sendfile"),
-    FILE_ENCONDING("file-encoding"),
-    READ_ONLY("read-only"),
-    WEBDAV("webdav"),
-    SECRET("secret"),
-    MAX_DEPTH("max-depth"),
-    DISABLED("disabled"),
+
+    CHECK_INTERVAL("check-interval"),
     
     DEVELOPMENT("development"),
+    DIRECTORY("directory"),
+    DISABLED("disabled"),
+    DISPLAY_SOOURCE_FRAGMENT("display-source-fragment"),
+    DUMP_SMAP("dump-smap"),
+    
+    ENABLED("enabled"),
+    ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT("error-on-use-bean-invalid-class-attribute"),
+    EXECUTOR("executor"),
+    EXTENDED("extended"),
+
+    FILE_ENCONDING("file-encoding"),
+
+    GENERATE_STRINGS_AS_CHAR_ARRAYS("generate-strings-as-char-arrays"),
+
+    JAVA_ENCODING("java-encoding"),
+
     KEEP_GENERATED("keep-generated"),
+    
+    LISTINGS("listings"),
+
+    MAPPED_FILE("mapped-file"),
+    MAX_DEPTH("max-depth"),
+    MODIFIFICATION_TEST_INTERVAL("modification-test-interval"),
+    
+    NAME("name"),
+
+    PATTERN("pattern"),
+    PREFIX("prefix"),
+    PROTOCOL("protocol"),
+
+    READ_ONLY("read-only"),
+    RECOMPILE_ON_FAIL("recompile-on-fail"),
+    RESOLVE_HOSTS("resolve-hosts"),
+    ROTATE("rotate"),
+    
+    SCHEME("scheme"),
+    SCRATCH_DIR("scratch-dir"),
+    SECRET("secret"),
+    SENDFILE("sendfile"),
+    SMAP("smap"),
+    SOURCE_VM("source-vm"),
+
+    TARGET_VM("target-vm"),
     TRIM_SPACES("trim-spaces"),
     TAG_POOLING("tag-pooling"),
-    MAPPED_FILE("mapped-file"),
-    CHECK_INTERVAL("check-interval"),
-    MODIFIFICATION_TEST_INTERVAL("modification-test-interval"),
-    RECOMPILE_ON_FAIL("recompile-on-fail"),
-    SMAP("smap"),
-    DUMP_SMAP("dump-smap"),
-    GENERATE_STRINGS_AS_CHAR_ARRAYS("generate-strings-as-char-arrays"),
-    ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT("error-on-use-bean-invalid-class-attribute"),
-    SCRATCH_DIR("scratch-dir"),
-    SOURCE_VM("source-vm"),
-    TARGET_VM("target-vm"),
-    JAVA_ENCODING("java-encoding"),
-    X_POWERED_BY("x-powered-by"),
-    DISPLAY_SOOURCE_FRAGMENT("display-source-fragment")
+
+    WEBDAV("webdav"),
+
+    X_POWERED_BY("x-powered-by"),    
     ;
     private final String name;
 

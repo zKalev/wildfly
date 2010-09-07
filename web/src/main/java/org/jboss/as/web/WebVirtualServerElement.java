@@ -22,8 +22,8 @@
 package org.jboss.as.web;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -33,21 +33,63 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
+ * The virtual server configuration element.
+ * 
  * @author Emanuel Muckenhuber
  */
 public class WebVirtualServerElement extends AbstractModelElement<WebVirtualServerElement> {
 
+    /** The serialVersionUID */
+    private static final long serialVersionUID = 1901406325489257078L;
+    
     private String name;
-    private final Set<String> aliases = new HashSet<String>();
+    private final Set<String> aliases = new TreeSet<String>();
     
     private WebAccessLogElement accessLog;
     private WebRewriteElement rewrite;
 
     protected WebVirtualServerElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
-        // TODO Handle elements
-        this.name = "localhost";
-        requireNoContent(reader);
+        String name = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        name = value;
+                        break;
+                    default: unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        // Virtual host name 
+        this.name = name == null ? "localhost" : name;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case WEB_1_0: {
+                    final Element element = Element.forName(reader.getLocalName());
+                    switch(element) {
+                        case ALIAS: 
+                            final String alias = reader.getElementText();
+                            this.aliases.add(alias.trim());
+                            break;
+                        case ACCESS_LOG:
+                            this.accessLog = new WebAccessLogElement(reader);
+                            break;
+                        case REWRITE: 
+                            this.rewrite = new WebRewriteElement(reader);
+                            break;
+                        default: throw unexpectedElement(reader);
+                    }
+                    break;
+                }
+                default: throw unexpectedElement(reader);
+            }
+        }
     }
 
     public String getName() {
@@ -68,7 +110,15 @@ public class WebVirtualServerElement extends AbstractModelElement<WebVirtualServ
     
     /** {@inheritDoc} */
     public long elementHash() {
-        return 0;
+        long hash = name.hashCode() & 0xFFFFFFFFL;
+        synchronized(aliases) {
+            for(final String alias : aliases) {
+                hash = Long.rotateLeft(hash, 1) ^ alias.hashCode() & 0xFFFFFFFFL;                
+            }            
+        }
+        if(accessLog != null) hash = Long.rotateLeft(hash, 1) ^ accessLog.elementHash();
+        if(rewrite != null) hash = Long.rotateLeft(hash, 1) ^ rewrite.elementHash();
+        return hash;
     }
 
     /** {@inheritDoc} */
@@ -83,6 +133,22 @@ public class WebVirtualServerElement extends AbstractModelElement<WebVirtualServ
 
     /** {@inheritDoc} */
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
+        streamWriter.writeAttribute("name", name);
+        synchronized(aliases) {
+            for(final String alias : aliases) {
+                streamWriter.writeStartElement(Element.ALIAS.getLocalName());
+                streamWriter.writeCharacters(alias);
+                streamWriter.writeEndElement();
+            }
+        }
+        if(accessLog != null) {
+            streamWriter.writeStartElement(Element.ACCESS_LOG.getLocalName());
+            accessLog.writeContent(streamWriter);
+        }
+        if(rewrite != null) {
+            streamWriter.writeStartElement(Element.REWRITE.getLocalName());
+            rewrite.writeContent(streamWriter);
+        }
         streamWriter.writeEndElement();
     }
 

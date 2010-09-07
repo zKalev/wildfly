@@ -37,6 +37,8 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public class WebAccessLogElement extends AbstractModelElement<WebAccessLogElement> {
 
+    /** The serialVersionUID */
+    private static final long serialVersionUID = 7372525549178383501L;
     private String directory;
     private String pattern;
     private String prefix;
@@ -46,6 +48,43 @@ public class WebAccessLogElement extends AbstractModelElement<WebAccessLogElemen
     
     protected WebAccessLogElement(XMLExtendedStreamReader reader) throws XMLStreamException {
         super(reader);
+        String resolveHosts = null;
+        String extended = null;
+        String rotate = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i ++) {
+            final String value = reader.getAttributeValue(i);
+            if (reader.getAttributeNamespace(i) != null) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case DIRECTORY:
+                        this.directory = value;
+                        break;
+                    case PATTERN:
+                        this.pattern = value;
+                        break;
+                    case PREFIX: 
+                        this.prefix = value;
+                        break;
+                    case RESOLVE_HOSTS: 
+                        resolveHosts = value;
+                        break;
+                    case EXTENDED:
+                        extended = value;
+                        break;
+                    case ROTATE:
+                        rotate = value;
+                        break;
+                    default: unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        this.resolveHosts = resolveHosts == null ? false : Boolean.valueOf(resolveHosts);
+        this.extended = extended == null ? false : Boolean.valueOf(extended);
+        this.rotate = rotate == null ? true : Boolean.valueOf(rotate);
+        requireNoContent(reader);
     }
     
     public String getDirectory() {
@@ -74,8 +113,8 @@ public class WebAccessLogElement extends AbstractModelElement<WebAccessLogElemen
     
     /** {@inheritDoc} */
     public long elementHash() {
-        // FIXME elementHash
-        return 0;
+        // FIXME
+        return 0L;
     }
 
     /** {@inheritDoc} */
@@ -91,8 +130,19 @@ public class WebAccessLogElement extends AbstractModelElement<WebAccessLogElemen
 
     /** {@inheritDoc} */
     public void writeContent(XMLExtendedStreamWriter streamWriter) throws XMLStreamException {
-        // FIXME writeContent
-        
+        if(directory != null) {
+            streamWriter.writeAttribute(Attribute.DIRECTORY.getLocalName(), directory);
+        }
+        if(pattern != null) {
+            streamWriter.writeAttribute(Attribute.PATTERN.getLocalName(), pattern);
+        }
+        if(prefix != null) {
+            streamWriter.writeAttribute(Attribute.PREFIX.getLocalName(), prefix);
+        }
+        streamWriter.writeAttribute(Attribute.EXTENDED.getLocalName(), String.valueOf(extended));
+        streamWriter.writeAttribute(Attribute.RESOLVE_HOSTS.getLocalName(), String.valueOf(resolveHosts));
+        streamWriter.writeAttribute(Attribute.ROTATE.getLocalName(), String.valueOf(rotate));
+        streamWriter.writeEndElement();
     }
 
 }

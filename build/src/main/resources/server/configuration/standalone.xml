@@ -50,7 +50,9 @@
         <remoting:subsystem thread-pool="remoting"/>
         <web:subsystem>
             <web:connector name="default" binding="http" />
-            <web:virtual-server name="localhost" />
+            <web:virtual-server name="localhost">
+                <web:alias>example.com</web:alias>
+            </web:virtual-server>
         </web:subsystem>
 	</profile>
 

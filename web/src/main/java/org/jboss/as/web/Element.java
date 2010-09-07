@@ -31,16 +31,23 @@ enum Element {
 	  // must be first
     UNKNOWN(null),
 
+    ACCESS_LOG("access-log"),
+    ALIAS("alias"),
+    
     CONNECTOR("connector"),
     CONTAINER_CONFIG("config"),
-    	
+
+    JSP_CONFIGURATION("jsp-configuration"),
+    
+    MIME_MAPPING("mime-mapping"),
+    
+    REWRITE("rewrite"),
+    
+    STATIC_RESOURCES("static-resources"),
     SUBSYSTEM("subsystem"),
     
     VIRTUAL_SERVER("virtual-server"),
-    
-    RESOURCESERVING("resourceServing"),
-    JSP_CONFIGURATION("jsp-configuration"),
-    MIME_MAPPING("mime-mapping"),
+
     WELCOME_FILE("welcome-file"),
     ;
 

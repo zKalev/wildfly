@@ -38,6 +38,8 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
+ * The web subsystem configuration.
+ * 
  * @author Emanuel Muckenhuber
  */
 public class WebSubsystemElement extends AbstractSubsystemElement<WebSubsystemElement> {
@@ -73,6 +75,9 @@ public class WebSubsystemElement extends AbstractSubsystemElement<WebSubsystemEl
             	case WEB_1_0: {
             		final Element element = Element.forName(reader.getLocalName());
             		switch(element) {
+            		    case CONTAINER_CONFIG: {
+            		        this.config = new WebContainerConfigElement(reader);
+            		    }
             			case CONNECTOR: {
             			    final WebConnectorElement connector = new WebConnectorElement(reader);
             			    final String name = connector.getName();
