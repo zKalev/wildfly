@@ -64,8 +64,10 @@ class WebInjectionContainer implements InstanceManager {
 
     public Object newInstance(String className, ClassLoader cl) throws IllegalAccessException, InvocationTargetException,
             NamingException, InstantiationException, ClassNotFoundException {
-        // This should not be used?
-        throw new IllegalStateException();
+        // Use by JspServletWrapper for example.
+        Class<?> clazz = cl.loadClass(className);
+        // Annnotations ? return newInstance(clazz.newInstance(), clazz);
+        return clazz.newInstance();
     }
 
 }
