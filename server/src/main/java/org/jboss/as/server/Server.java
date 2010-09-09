@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.jboss.as.model.Standalone;
-import org.jboss.as.process.StreamUtils;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
@@ -43,26 +42,26 @@ import org.jboss.msc.service.StartException;
  */
 public class Server extends AbstractServer {
 
-	private ServerCommunicationHandler serverCommunicationHandler;
+    private ServerCommunicationHandler serverCommunicationHandler;
     private final MessageHandler messageHandler = new MessageHandler(this);
 
     public Server(ServerEnvironment environment) {
-    	super(environment);
+        super(environment);
     }
 
     public void start() {
         launchCommunicationHandler();
         sendMessage(ServerManagerProtocolCommand.SERVER_AVAILABLE);
-        log.info("Server Available to start");    	
+        log.info("Server Available to start");
     }
-    
+
     public void start(Standalone config) throws ServerStartException {
-    	try {
-    		super.start(config);
-    	} catch(ServerStartException e) {
-    		sendMessage(ServerManagerProtocolCommand.SERVER_START_FAILED);
-    		throw e;
-    	}
+        try {
+            super.start(config);
+        } catch(ServerStartException e) {
+            sendMessage(ServerManagerProtocolCommand.SERVER_START_FAILED);
+            throw e;
+        }
     }
 
     public void stop() {
@@ -71,7 +70,7 @@ public class Server extends AbstractServer {
     }
 
     ServerStartupListener.Callback createListenerCallback() {
-    	return new ServerStartupListener.Callback() {
+        return new ServerStartupListener.Callback() {
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
                 if(serviceFailures.isEmpty()) {
                     log.infof("JBoss AS started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", elapsedTime, totalServices, onDemandServices, startedServices);
@@ -88,7 +87,7 @@ public class Server extends AbstractServer {
             }
         };
     }
-    
+
     private void launchCommunicationHandler() {
         this.serverCommunicationHandler = ServerCommunicationHandlerFactory.getInstance().getServerCommunicationHandler(getEnvironment(), messageHandler);
         Thread t = new Thread(this.serverCommunicationHandler.getController(), "Server Process");

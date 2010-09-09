@@ -21,20 +21,20 @@
  */
 
 /**
- * 
+ *
  */
 package org.jboss.as.server.manager;
-
-import java.io.IOException;
-import java.util.List;
 
 import org.jboss.as.process.ProcessManagerSlave.Handler;
 import org.jboss.as.server.manager.ServerManagerProtocolCommand.Command;
 import org.jboss.logging.Logger;
 
+import java.io.IOException;
+import java.util.List;
+
 /**
  * A MessageHandler.
- * 
+ *
  * @author Brian Stansberry
  */
 class MessageHandler implements Handler {
@@ -43,8 +43,8 @@ class MessageHandler implements Handler {
 
     private final ServerManager serverManager;
 //    private final Map<String, Server> servers = new ConcurrentHashMap<String, Server>();
-    
-    
+
+
     MessageHandler(ServerManager serverManager) {
         if (serverManager == null) {
             throw new IllegalArgumentException("serverManager is null");
@@ -67,15 +67,20 @@ class MessageHandler implements Handler {
             Command cmd = ServerManagerProtocolCommand.readCommand(message);
 //          // TODO: actually handle this....
             log.info("Received message from server " + sourceProcessName + ": " + cmd.getCommand());
+
+            // Hack
+            if(DomainControllerProcess.DOMAIN_CONTROLLER_PROCESS_NAME.equals(sourceProcessName) && cmd.getCommand().equals(ServerManagerProtocolCommand.SERVER_STARTED)) {
+                serverManager.localDomainControllerReady();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-    
+
 
     @Override
     public void shutdown() {
-        serverManager.stop();        
+        serverManager.stop();
     }
 
 //    public void registerServer(String serverName, Server server) {
@@ -87,7 +92,7 @@ class MessageHandler implements Handler {
 //        }
 //        servers.put(serverName, server);
 //    }
-//    
+//
 //    public void unregisterServer(String serverName) {
 //        if (serverName == null) {
 //            throw new IllegalArgumentException("serverName is null");

@@ -32,34 +32,34 @@ import java.net.SocketAddress;
  */
 class ManagedServerSocketBinding extends ServerSocket implements ManagedBinding {
 
-	private final SocketBindingManager socketBindings;
-	
-	ManagedServerSocketBinding(final SocketBindingManager socketBindings) throws IOException {
-		this.socketBindings = socketBindings;
-	}
-	
-	public InetSocketAddress getBindAddress() {
-		return InetSocketAddress.class.cast(getLocalPort());
-	}
+    private final SocketBindingManager socketBindings;
 
-	public void bind(SocketAddress endpoint, int backlog) throws IOException {
-		super.bind(endpoint, backlog);
-		socketBindings.registerBinding(this);
-	}
-	
-	public Socket accept() throws IOException {
-		final ManagedSocketBinding socket = new ManagedSocketBinding(socketBindings);
-		implAccept(socket);
-		return socket;
-	}
+    ManagedServerSocketBinding(final SocketBindingManager socketBindings) throws IOException {
+        this.socketBindings = socketBindings;
+    }
 
-	public void close() throws IOException {
-		try {
-			super.close();
-		} finally {
-			socketBindings.unregisterBinding(this);
-		}
-	}
-	
+    public InetSocketAddress getBindAddress() {
+        return InetSocketAddress.class.cast(getLocalPort());
+    }
+
+    public void bind(SocketAddress endpoint, int backlog) throws IOException {
+        super.bind(endpoint, backlog);
+        socketBindings.registerBinding(this);
+    }
+
+    public Socket accept() throws IOException {
+        final ManagedSocketBinding socket = new ManagedSocketBinding(socketBindings);
+        implAccept(socket);
+        return socket;
+    }
+
+    public void close() throws IOException {
+        try {
+            super.close();
+        } finally {
+            socketBindings.unregisterBinding(this);
+        }
+    }
+
 }
 

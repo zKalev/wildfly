@@ -43,85 +43,84 @@ import org.jboss.msc.service.ServiceName;
  * @author Emanuel Muckenhuber
  */
 public interface SocketBindingManager {
-	
-	public static final ServiceName SOCKET_BINDING_MANAGER = ServiceName.JBOSS.append("socket-binding-manager");
-	
-	/**
-	 * Get the managed server socket factory.
-	 * 
-	 * @return the server socket factory
-	 */
-	ServerSocketFactory getServerSocketFactory();
-	
-	/**
-	 * Get the socket factory.
-	 * 
-	 * @return the socket factory
-	 */
-	SocketFactory getSocketFactory();
-	
-	/**
-	 * Create a datagram socket.
-	 * 
-	 * @param address the socket address
-	 * @return the datagram socket
-	 * @throws SocketException
-	 */
-	DatagramSocket createDatagramSocket(final SocketAddress address) throws SocketException ;
-	
-	/**
-	 * Create a multicast socket.
-	 * 
-	 * @param address the socket address
-	 * @return the multicast socket 
-	 * @throws IOException
-	 */
-	MulticastSocket createMulticastSocket(final SocketAddress address) throws IOException;
 
-	/**
-	 * Get the server port offset.
-	 * TODO move to somewhere else...
-	 * 
-	 * @return the port offset
-	 */
-	int getPortOffset();
-	
-	/**
-	 * List the activate bindings.
-	 * 
-	 * @return the registered bindings
-	 */
-	Collection<ManagedBinding> listActiveBindings();
-	
-	/**
-	 * Register an active socket binding.
-	 * 
-	 * @param binding the managed binding
-	 * @param bindingName the binding name
-	 * @return a closeable, which closes and unregisters the binding
-	 */
-	Closeable registerBinding(final ManagedBinding binding);
+    ServiceName SOCKET_BINDING_MANAGER = ServiceName.JBOSS.append("socket-binding-manager");
 
-	Closeable registerSocket(final Socket socket);
-	Closeable registerSocket(final ServerSocket socket);
-	Closeable registerSocket(final DatagramSocket socket);
-	Closeable registerChannel(final SocketChannel channel);
-	Closeable registerChannel(final ServerSocketChannel channel);
-	Closeable registerChannel(final DatagramChannel channel);
-	
-	/**
-	 * Unregister a socket binding.
-	 * 
-	 * @param binding the managed socket binding
-	 */
-	void unregisterBinding(ManagedBinding binding);
-	
-	void unregisterSocket(final Socket socket);
-	void unregisterSocket(final ServerSocket socket);
-	void unregisterSocket(final DatagramSocket socket);
-	void unregisterChannel(final SocketChannel channel);
-	void unregisterChannel(final ServerSocketChannel channel);
-	void unregisterChannel(final DatagramChannel channel);
-	
+    /**
+     * Get the managed server socket factory.
+     *
+     * @return the server socket factory
+     */
+    ServerSocketFactory getServerSocketFactory();
+
+    /**
+     * Get the socket factory.
+     *
+     * @return the socket factory
+     */
+    SocketFactory getSocketFactory();
+
+    /**
+     * Create a datagram socket.
+     *
+     * @param address the socket address
+     * @return the datagram socket
+     * @throws SocketException
+     */
+    DatagramSocket createDatagramSocket(final SocketAddress address) throws SocketException ;
+
+    /**
+     * Create a multicast socket.
+     *
+     * @param address the socket address
+     * @return the multicast socket
+     * @throws IOException
+     */
+    MulticastSocket createMulticastSocket(final SocketAddress address) throws IOException;
+
+    /**
+     * Get the server port offset.
+     * TODO move to somewhere else...
+     *
+     * @return the port offset
+     */
+    int getPortOffset();
+
+    /**
+     * List the activate bindings.
+     *
+     * @return the registered bindings
+     */
+    Collection<ManagedBinding> listActiveBindings();
+
+    /**
+     * Register an active socket binding.
+     *
+     * @param binding the managed binding
+     * @param bindingName the binding name
+     */
+    Closeable registerBinding(final ManagedBinding binding);
+
+    Closeable registerSocket(final Socket socket);
+    Closeable registerSocket(final ServerSocket socket);
+    Closeable registerSocket(final DatagramSocket socket);
+    Closeable registerChannel(final SocketChannel channel);
+    Closeable registerChannel(final ServerSocketChannel channel);
+    Closeable registerChannel(final DatagramChannel channel);
+
+    /**
+     * Unregister a socket binding.
+     *
+     * @param binding the managed socket binding
+     */
+    void unregisterBinding(ManagedBinding binding);
+
+    void unregisterSocket(final Socket socket);
+    void unregisterSocket(final ServerSocket socket);
+    void unregisterSocket(final DatagramSocket socket);
+    void unregisterChannel(final SocketChannel channel);
+    void unregisterChannel(final ServerSocketChannel channel);
+    void unregisterChannel(final DatagramChannel channel);
+
 }
 

@@ -34,28 +34,28 @@ import java.io.FileReader;
 import java.util.Map;
 
 /**
- * The standalone server. 
- * 
+ * The standalone server.
+ *
  * @author Emanuel Muckenhuber
  */
 public class StandaloneServer extends AbstractServer {
 
-	private static final String STANDALONE_XML = "standalone.xml";
-	private final StandardElementReaderRegistrar extensionRegistrar;
-	
-	protected StandaloneServer(ServerEnvironment environment) {
-		super(environment);
-		extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
-	}
+    private static final String STANDALONE_XML = "standalone.xml";
+    private final StandardElementReaderRegistrar extensionRegistrar;
 
-	public void start() throws ServerStartException {
-		final File standalone = new File(getEnvironment().getDomainConfigurationDir(), STANDALONE_XML); 
-		if(! standalone.isFile()) {
-			throw new ServerStartException("File " + standalone.getAbsolutePath()  + " does not exist.");
-		}
-		if(! standalone.canWrite() ) {
-			throw new ServerStartException("File " + standalone.getAbsolutePath()  + " is not writeable.");
-		}
+    protected StandaloneServer(ServerEnvironment environment) {
+        super(environment);
+        extensionRegistrar = StandardElementReaderRegistrar.Factory.getRegistrar();
+    }
+
+    public void start() throws ServerStartException {
+        final File standalone = new File(getEnvironment().getDomainConfigurationDir(), STANDALONE_XML);
+        if(! standalone.isFile()) {
+            throw new ServerStartException("File " + standalone.getAbsolutePath()  + " does not exist.");
+        }
+        if(! standalone.canWrite() ) {
+            throw new ServerStartException("File " + standalone.getAbsolutePath()  + " is not writeable.");
+        }
         final ParseResult<Standalone> parseResult = new ParseResult<Standalone>();
         try {
             final XMLMapper mapper = XMLMapper.Factory.create();
@@ -64,29 +64,28 @@ public class StandaloneServer extends AbstractServer {
         } catch (Exception e) {
             throw new ServerStartException("Caught exception during processing of standalone.xml", e);
         }
-		
-		start(parseResult.getResult());
-		// TODO remove life thread
-		new Thread() {
-			{
-				setName("Server Life Thread");
-				setDaemon(false);
-				setPriority(MIN_PRIORITY);
-			}
 
-			public void run() {
-				for (;;)
-					try {
-						sleep(1000000L);
-					} catch (InterruptedException ignore) {
-						// 
-					}
-			}
-		}.start();
-	}
-	
-	ServerStartupListener.Callback createListenerCallback() {
-		return new ServerStartupListener.Callback() {
+        start(parseResult.getResult());
+        // TODO remove life thread
+        new Thread() { {
+                setName("Server Life Thread");
+                setDaemon(false);
+                setPriority(MIN_PRIORITY);
+            }
+
+            public void run() {
+                for (;;)
+                    try {
+                        sleep(1000000L);
+                    } catch (InterruptedException ignore) {
+                        //
+                    }
+            }
+        }.start();
+    }
+
+    ServerStartupListener.Callback createListenerCallback() {
+        return new ServerStartupListener.Callback() {
             public void run(Map<ServiceName, StartException> serviceFailures, long elapsedTime, int totalServices, int onDemandServices, int startedServices) {
                 if(serviceFailures.isEmpty()) {
                     log.infof("JBoss AS started in %dms. - Services [Total: %d, On-demand: %d. Started: %d]", elapsedTime, totalServices, onDemandServices, startedServices);
@@ -100,7 +99,7 @@ public class StandaloneServer extends AbstractServer {
                 }
             }
         };
-	}
-	
+    }
+
 }
 

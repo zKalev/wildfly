@@ -34,10 +34,10 @@ import org.jboss.msc.service.ServiceName;
  * <li>Removing a deployment descriptor to prevent it from being processed</li>
  * </ol>
  *
- * 
+ *
  */
 public interface DeploymentUnitProcessor {
-    static final ServiceName DEPLOYMENT_PROCESSOR_SERVICE_NAME = ServiceName.JBOSS.append("deployment", "processor");
+    ServiceName DEPLOYMENT_PROCESSOR_SERVICE_NAME = ServiceName.JBOSS.append("deployment", "processor");
 
     /**
      * Process the deployment unit.

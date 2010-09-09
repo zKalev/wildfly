@@ -43,7 +43,7 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
      *
      * @param environment The environment
      * @return An initial context factory
-     * @throws NamingException If an error occurs loading the factroy class. 
+     * @throws NamingException If an error occurs loading the factroy class.
      */
     public javax.naming.spi.InitialContextFactory createInitialContextFactory(Hashtable<?, ?> environment) throws NamingException {
         final String factoryClassName = (String)environment.get(Context.INITIAL_CONTEXT_FACTORY);
@@ -60,13 +60,13 @@ public class InitialContextFactoryBuilder implements javax.naming.spi.InitialCon
     }
 
     private ClassLoader getContextClassLoader() {
-	    return AccessController.doPrivileged(
+        return AccessController.doPrivileged(
             new PrivilegedAction<ClassLoader>() {
                 public ClassLoader run() {
                     return Thread.currentThread().getContextClassLoader();
                 }
             }
-	    );
+        );
     }
-    
+
 }

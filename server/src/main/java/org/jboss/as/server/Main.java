@@ -84,13 +84,13 @@ public final class Main {
             if (config == null) {
                 abort(null);
             } else {
-            	if(config.isStandalone()) {
-            		server = new StandaloneServer(config);
-            	} else {
-            		server = new Server(config);
-            	}
-            	// Start the server. 
-            	server.start();
+                if(config.isStandalone()) {
+                    server = new StandaloneServer(config);
+                } else {
+                    server = new Server(config);
+                }
+                // Start the server.
+                server.start();
             }
         } catch (Throwable t) {
             abort(t);
@@ -110,7 +110,7 @@ public final class Main {
             System.exit(1);
         }
     }
-    
+
     private ServerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
@@ -150,10 +150,10 @@ public final class Main {
                     }
                 } else if (CommandLineConstants.INTERPROCESS_NAME.equals(arg)){
                     procName = args[++i];
-                    
-                }else if (arg.equals(CommandLineConstants.STANDALONE)) {
-                	// Start in standalone mode
-                	standalone = true;
+
+                } else if (arg.equals(CommandLineConstants.STANDALONE)) {
+                    // Start in standalone mode
+                    standalone = true;
                 } else if (arg.startsWith("-D")) {
 
                     // set a system property

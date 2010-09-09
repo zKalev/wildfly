@@ -136,7 +136,7 @@ public class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V
     @SuppressWarnings("unchecked")
     private void init(int initialCapacity, float loadFactor) {
         int c = 1;
-        for (; c < initialCapacity; c <<= 1) ;
+        while (c < initialCapacity) c <<= 1;
         threshold = (int) (c * loadFactor);
 
         // Include the load factor when sizing the table for the first time
@@ -158,18 +158,18 @@ public class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V
 
     // The normal bit spreader...
 
-    private static final int hash(Object key) {
+    private static int hash(Object key) {
         int h = key.hashCode();
         h ^= (h >>> 20) ^ (h >>> 12);
         return h ^ (h >>> 7) ^ (h >>> 4);
     }
 
     @SuppressWarnings("unchecked")
-    private static final <K> K maskNull(K key) {
+    private static <K> K maskNull(K key) {
         return key == null ? (K) NULL : key;
     }
 
-    private static final <K> K unmaskNull(K key) {
+    private static <K> K unmaskNull(K key) {
         return key == NULL ? null : key;
     }
 
@@ -178,11 +178,11 @@ public class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V
         return index;
     }
 
-    private static final boolean eq(Object o1, Object o2) {
+    private static boolean eq(Object o1, Object o2) {
         return o1 == o2 || (o1 != null && o1.equals(o2));
     }
 
-    private static final int index(int hashCode, int length) {
+    private static int index(int hashCode, int length) {
         return hashCode & (length - 1);
     }
 
@@ -312,7 +312,7 @@ public class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V
                 size = MAXIMUM_CAPACITY;
 
             int length = table.length;
-            for (; length < size; length <<= 1) ;
+            while (length < size) length <<= 1;
 
             resize(length);
         }
@@ -514,13 +514,13 @@ public class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V
         private int expectedCount = modCount;
         private int current = -1;
         private boolean hasNext;
-        Entry<K, V> table[] = FastCopyHashMap.this.table;
+        Entry<K, V>[] table = FastCopyHashMap.this.table;
 
         public boolean hasNext() {
             if (hasNext == true)
                 return true;
 
-            Entry<K, V> table[] = this.table;
+            Entry<K, V>[] table = this.table;
             for (int i = next; i < table.length; i++) {
                 if (table[i] != null) {
                     next = i;

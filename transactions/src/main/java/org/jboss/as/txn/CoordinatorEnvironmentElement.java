@@ -30,10 +30,9 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
- * The model element for the coordinator environment element. 
+ * The model element for the coordinator environment element.
  *
  * @author John E. Bailey
  */

@@ -22,6 +22,14 @@
 
 package org.jboss.as.server.manager;
 
+import org.jboss.as.process.CommandLineConstants;
+import org.jboss.logmanager.Level;
+import org.jboss.logmanager.Logger;
+import org.jboss.stdio.LoggingOutputStream;
+import org.jboss.stdio.NullInputStream;
+import org.jboss.stdio.SimpleStdioContextSelector;
+import org.jboss.stdio.StdioContext;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,17 +40,9 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
-import org.jboss.as.process.CommandLineConstants;
-import org.jboss.logmanager.Level;
-import org.jboss.logmanager.Logger;
-import org.jboss.stdio.LoggingOutputStream;
-import org.jboss.stdio.NullInputStream;
-import org.jboss.stdio.SimpleStdioContextSelector;
-import org.jboss.stdio.StdioContext;
-
 /**
  * The main-class entry point for the server manager process.
- * 
+ *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class Main {
@@ -66,12 +66,12 @@ public final class Main {
 
     /**
      * The main method.
-     * 
+     *
      * @param args
      *            the command-line arguments
      */
     public static void main(String[] args) {
-        
+
         // Grab copies of our streams.
         final InputStream in = System.in;
         final PrintStream out = System.out;
@@ -111,21 +111,6 @@ public final class Main {
             abort(t);
             return;
         }
-        
-        // We are now past the point where a failure should result in a
-        // shutdown() call; i.e. the ServerManager should be running and
-        // capable of handling external input
-        try {
-            sm.startServers();
-        }
-        catch (RuntimeException e) {
-            e.printStackTrace(stderr);
-            throw e;
-        }
-        catch (Error e) {
-            e.printStackTrace(stderr);
-            throw e;
-        }
     }
 
     private void abort(Throwable t) {
@@ -135,11 +120,11 @@ public final class Main {
 
             // FIXME implement abort()
             throw new UnsupportedOperationException("implement me");
-            
+
 //            if (t != null) {
 //                t.printStackTrace(System.err);
 //            }
-            
+
         } finally {
             System.exit(1);
         }
@@ -153,7 +138,7 @@ public final class Main {
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
-            
+
             try {
                 if (CommandLineConstants.VERSION.equals(arg)) {
                     System.out.println("JBoss Application Server " + getVersionString());

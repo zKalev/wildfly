@@ -21,7 +21,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.jboss.as.server;
 
@@ -39,33 +39,33 @@ import java.util.List;
 
 /**
  * A {@link StandardElementReaderRegistrar} that uses a static list of extensions.
- * 
+ *
  * @author Brian Stansberry
  */
 public class StandardElementReaderRegistrarImpl implements StandardElementReaderRegistrar {
-    
+
     /**
      * Standard modules that include parsing {@link Extension}s.
      */
     private static final List<String> EXTENSION_MODULES = Arrays.asList(new String[] {
-            "org.jboss.as:jboss-as-logging",
-            "org.jboss.as:jboss-as-threads",
-            "org.jboss.as:jboss-as-remoting",
-            "org.jboss.as:jboss-as-transactions",
-            "org.jboss.as:jboss-as-naming",
-            "org.jboss.as:jboss-as-web"
+            "org.jboss.as.logging",
+            "org.jboss.as.threads",
+            "org.jboss.as.remoting",
+            "org.jboss.as.transactions",
+            "org.jboss.as.jboss-as-web",
+            "org.jboss.as.naming"
     });
-    
-    
+
+
     public synchronized void registerStandardStandaloneReaders(XMLMapper mapper) throws ModuleLoadException {
-        
+
         for (Namespace ns : Namespace.STANDARD_NAMESPACES) {
             mapper.registerRootElement(new QName(ns.getUriString(), Element.STANDALONE.getLocalName()), StandaloneParser.getInstance());
         }
-        
+
         registerExtensions(mapper);
     }
-    
+
     private static void registerExtensions(XMLMapper mapper) throws ModuleLoadException {
         for (String module : EXTENSION_MODULES) {
             for (Extension extension : Module.loadService(module, Extension.class)) {
