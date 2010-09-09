@@ -201,19 +201,18 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
         </module-def>
 
-<<<<<<< HEAD
-        <module-def group="org.jboss.as" artifact="jboss-as-web">
+        <module-def name="org.jboss.as.jboss-as-web">
             <maven-resource group="org.jboss.as" artifact="jboss-as-web"/>
-        	<maven-resource group="org.jboss.web" artifact="jasper-jdt"/>
-        	<maven-resource group="org.jboss.web" artifact="jbossweb"/>
+            <maven-resource group="org.jboss.web" artifact="jasper-jdt"/>
+            <maven-resource group="org.jboss.web" artifact="jbossweb"/>
         </module-def>
-    	
-        <module-def group="org.jboss.as" artifact="jboss-as-web-root">
+
+        <module-def name="org.jboss.as.jboss-as-web-root">
             <maven-resource group="org.jboss.as" artifact="jboss-as-web-root"/>
         </module-def>
 
         <!-- HACK JFCLERE -->
-        <module-def group="org.jboss.metadata" artifact="jboss-metadata">
+        <module-def name="org.jboss.metadata.jboss-metadata">
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-common"/>
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-war"/>
             <maven-resource group="org.jboss" artifact="jbossxb"/>
