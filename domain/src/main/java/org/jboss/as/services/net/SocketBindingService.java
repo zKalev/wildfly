@@ -80,28 +80,5 @@ public class SocketBindingService implements Service<SocketBinding> {
                 SocketBindingManager.class, service.getSocketBindings());
         batch.setInitialMode(Mode.ON_DEMAND);
     }
-
-    /* TO DO check that!!! */
-	InjectedValue<SocketBindingManager> getSocketBindings() {
-		return socketBindings;
-	}
-	
-	InjectedValue<NetworkInterfaceBinding> getInterfaceBinding() {
-		return interfaceBinding;
-	}
-	
-	public static void addService(BatchBuilder builder, SocketBindingElement element) {
-    	SocketBindingService service = new SocketBindingService(element);
-    	BatchServiceBuilder<SocketBinding> batch = builder
-    		.addService(SocketBinding.JBOSS_BINDING_NAME.append(element.getName()), service);
-    	batch.addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(element.getInterfaceName()), 
-    			NetworkInterfaceBinding.class, service.getInterfaceBinding());
-    	batch.addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER,
-    			SocketBindingManager.class, service.getSocketBindings());
-    	batch.setLocation(element.getLocation());
-    	batch.setInitialMode(Mode.IMMEDIATE);
-	}
-	
-    /* TO DO check that!!! (END) */
 }
 

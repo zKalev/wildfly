@@ -161,12 +161,12 @@ public final class ConnectorElement extends AbstractModelElement<ConnectorElemen
         streamWriter.writeAttribute("name", name);
         streamWriter.writeAttribute("socket-binding", socketBinding);
         if(saslElement != null) {
-        	streamWriter.writeStartElement("sasl");
-        	saslElement.writeContent(streamWriter);
+                streamWriter.writeStartElement("sasl");
+                saslElement.writeContent(streamWriter);
         }
         if(authenticationProvider != null) {
-        	streamWriter.writeEmptyElement("authentication-provider");
-        	streamWriter.writeAttribute("name", authenticationProvider);
+                streamWriter.writeEmptyElement("authentication-provider");
+                streamWriter.writeAttribute("name", authenticationProvider);
         }
         if (connectorProperties != null) {
             streamWriter.writeStartElement("properties");

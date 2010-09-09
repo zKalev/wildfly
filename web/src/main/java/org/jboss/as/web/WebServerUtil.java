@@ -1,24 +1,24 @@
 /*
-* JBoss, Home of Professional Open Source
-* Copyright 2010, Red Hat Inc., and individual contributors as indicated
-* by the @authors tag. See the copyright.txt in the distribution for a
-* full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.web;
 
 import java.io.File;
@@ -32,13 +32,16 @@ import org.jboss.web.rewrite.RewriteValve;
  */
 class WebServerUtil {
 
-    private WebServerUtil() {}
-    
+    private WebServerUtil() {
+    }
+
     /**
      * Create a access log valve.
-     * 
-     * @param logDirectory the jboss as log directory.
-     * @param element the log configuration
+     *
+     * @param logDirectory
+     *            the jboss as log directory.
+     * @param element
+     *            the log configuration
      * @return the access log valve
      */
     static Valve createAccessLogValve(final File logDirectory, final WebAccessLogElement element) {
@@ -52,18 +55,18 @@ class WebServerUtil {
         // TODO extended?
         return log;
     }
-    
+
     /**
      * Create rewrite value.
-     * 
-     * @param element the rewrite configuration
+     *
+     * @param element
+     *            the rewrite configuration
      * @return a rewrite valve
      */
-    static Valve createRewriteValve(WebRewriteElement element) {        
+    static Valve createRewriteValve(WebRewriteElement element) {
         final RewriteValve rewrite = new RewriteValve();
         // TODO
         return rewrite;
     }
-    
-}
 
+}

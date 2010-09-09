@@ -302,25 +302,25 @@ public class ProfileElement extends AbstractModelElement<ProfileElement> impleme
 
     /**
      * Resolve the included profiles for this configuration.
-     * 
+     *
      * @return the included profiles
      */
     Collection<ProfileElement> resolveIncludedProfiles() {
-    	Map<String, ProfileElement> included = new HashMap<String, ProfileElement>();
-    	internalResolveIncludedProfiles(this, included);
-    	return included.values();
+        Map<String, ProfileElement> included = new HashMap<String, ProfileElement>();
+        internalResolveIncludedProfiles(this, included);
+        return included.values();
     }
-    
+
     private void internalResolveIncludedProfiles(ProfileElement profile, Map<String, ProfileElement> included) {
-    	included.put(profile.getName(), profile);
-    	for(final String profileInclude : profile.includedProfiles.keySet()) {
-    		final ProfileElement element = profile.includedProfileResolver.resolveRef(profileInclude);
-    		if(element == null) {
-    			throw new IllegalStateException("failed to resolve profile " + profileInclude + ", " + getLocation());
-    		}
-    		if(! included.containsKey(element.getName())) {
-    			internalResolveIncludedProfiles(element, included);
-    		}
-    	}
+        included.put(profile.getName(), profile);
+        for(final String profileInclude : profile.includedProfiles.keySet()) {
+                final ProfileElement element = profile.includedProfileResolver.resolveRef(profileInclude);
+                if(element == null) {
+                    throw new IllegalStateException("failed to resolve profile " + profileInclude + ", " + getLocation());
+                }
+                if(! included.containsKey(element.getName())) {
+                    internalResolveIncludedProfiles(element, included);
+                }
+        }
     }
 }

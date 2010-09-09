@@ -1,24 +1,24 @@
 /*
-* JBoss, Home of Professional Open Source
-* Copyright 2010, Red Hat Inc., and individual contributors as indicated
-* by the @authors tag. See the copyright.txt in the distribution for a
-* full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.web;
 
 import org.jboss.as.deployment.chain.DeploymentChain;
@@ -54,8 +54,8 @@ import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
 
 /**
- * Activator of the web deployment system. 
- * 
+ * Activator of the web deployment system.
+ *
  * @author Emanuel Muckenhuber
  */
 class WebDeploymentActivator implements ServiceActivator {
@@ -64,17 +64,18 @@ class WebDeploymentActivator implements ServiceActivator {
 
     /**
      * Activate the services required for service deployments.
-     * 
-     * @param context The service activator context
+     *
+     * @param context
+     *            The service activator context
      */
     public void activate(final ServiceActivatorContext context) {
         final BatchBuilder batchBuilder = context.getBatchBuilder();
         batchBuilder.addServiceValueIfNotExist(DeploymentChainProviderService.SERVICE_NAME, new DeploymentChainProviderService());
 
-        final Value<DeploymentChain> deploymentChainValue = Values.immediateValue((DeploymentChain)new DeploymentChainImpl(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME.toString()))   ;
+        final Value<DeploymentChain> deploymentChainValue = Values.immediateValue((DeploymentChain) new DeploymentChainImpl(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME.toString()));
         final DeploymentChainService deploymentChainService = new DeploymentChainService(deploymentChainValue);
-        batchBuilder.addService(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME, deploymentChainService)
-            .addDependency(DeploymentChainProviderService.SERVICE_NAME, DeploymentChainProvider.class, new DeploymentChainProviderInjector<DeploymentChain>(deploymentChainValue, new WarDeploymentChainSelector(), WAR_DEPLOYMENT_CHAIN_PRIORITY));
+        batchBuilder.addService(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME, deploymentChainService).addDependency(DeploymentChainProviderService.SERVICE_NAME, DeploymentChainProvider.class,
+                new DeploymentChainProviderInjector<DeploymentChain>(deploymentChainValue, new WarDeploymentChainSelector(), WAR_DEPLOYMENT_CHAIN_PRIORITY));
 
         // Jar deployment processors ....
         addDeploymentProcessor(batchBuilder, new AnnotationIndexProcessor(), AnnotationIndexProcessor.PRIORITY);
@@ -88,7 +89,7 @@ class WebDeploymentActivator implements ServiceActivator {
         addDeploymentProcessor(batchBuilder, new ModuleContextProcessor(), ModuleContextProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ParsedServiceDeploymentProcessor(), ParsedServiceDeploymentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new ManagedBeanDeploymentProcessor(), ManagedBeanDeploymentProcessor.PRIORITY);
-        
+
         // Web specific deployment processors ....
         addDeploymentProcessor(batchBuilder, new WebParsingDeploymentProcessor(), WebParsingDeploymentProcessor.PRIORITY);
         addDeploymentProcessor(batchBuilder, new WebClassloadingDependencyProcessor(), WebClassloadingDependencyProcessor.PRIORITY);
@@ -99,7 +100,7 @@ class WebDeploymentActivator implements ServiceActivator {
 
     private <T extends DeploymentUnitProcessor> void addDeploymentProcessor(final BatchBuilder batchBuilder, final T deploymentUnitProcessor, final long priority) {
         final DeploymentUnitProcessorService<T> deploymentUnitProcessorService = new DeploymentUnitProcessorService<T>(deploymentUnitProcessor);
-        batchBuilder.addService(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(deploymentUnitProcessor.getClass().getName()), deploymentUnitProcessorService)
-            .addDependency(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME, DeploymentChain.class, new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
+        batchBuilder.addService(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME.append(deploymentUnitProcessor.getClass().getName()), deploymentUnitProcessorService).addDependency(WAR_DEPLOYMENT_CHAIN_SERVICE_NAME, DeploymentChain.class,
+                new DeploymentChainProcessorInjector<T>(deploymentUnitProcessorService, priority));
     }
 }

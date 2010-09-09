@@ -1,24 +1,24 @@
 /*
-* JBoss, Home of Professional Open Source
-* Copyright 2010, Red Hat Inc., and individual contributors as indicated
-* by the @authors tag. See the copyright.txt in the distribution for a
-* full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.web;
 
 import java.util.HashMap;
@@ -34,17 +34,10 @@ enum Attribute {
     BINDING("binding"),
 
     CHECK_INTERVAL("check-interval"),
-    
-    DEVELOPMENT("development"),
-    DIRECTORY("directory"),
-    DISABLED("disabled"),
-    DISPLAY_SOOURCE_FRAGMENT("display-source-fragment"),
-    DUMP_SMAP("dump-smap"),
-    
-    ENABLED("enabled"),
-    ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT("error-on-use-bean-invalid-class-attribute"),
-    EXECUTOR("executor"),
-    EXTENDED("extended"),
+
+    DEVELOPMENT("development"), DIRECTORY("directory"), DISABLED("disabled"), DISPLAY_SOOURCE_FRAGMENT("display-source-fragment"), DUMP_SMAP("dump-smap"),
+
+    ENABLED("enabled"), ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUT("error-on-use-bean-invalid-class-attribute"), EXECUTOR("executor"), EXTENDED("extended"),
 
     FILE_ENCONDING("file-encoding"),
 
@@ -53,39 +46,24 @@ enum Attribute {
     JAVA_ENCODING("java-encoding"),
 
     KEEP_GENERATED("keep-generated"),
-    
+
     LISTINGS("listings"),
 
-    MAPPED_FILE("mapped-file"),
-    MAX_DEPTH("max-depth"),
-    MODIFIFICATION_TEST_INTERVAL("modification-test-interval"),
-    
+    MAPPED_FILE("mapped-file"), MAX_DEPTH("max-depth"), MODIFIFICATION_TEST_INTERVAL("modification-test-interval"),
+
     NAME("name"),
 
-    PATTERN("pattern"),
-    PREFIX("prefix"),
-    PROTOCOL("protocol"),
+    PATTERN("pattern"), PREFIX("prefix"), PROTOCOL("protocol"),
 
-    READ_ONLY("read-only"),
-    RECOMPILE_ON_FAIL("recompile-on-fail"),
-    RESOLVE_HOSTS("resolve-hosts"),
-    ROTATE("rotate"),
-    
-    SCHEME("scheme"),
-    SCRATCH_DIR("scratch-dir"),
-    SECRET("secret"),
-    SENDFILE("sendfile"),
-    SMAP("smap"),
-    SOURCE_VM("source-vm"),
+    READ_ONLY("read-only"), RECOMPILE_ON_FAIL("recompile-on-fail"), RESOLVE_HOSTS("resolve-hosts"), ROTATE("rotate"),
 
-    TARGET_VM("target-vm"),
-    TRIM_SPACES("trim-spaces"),
-    TAG_POOLING("tag-pooling"),
+    SCHEME("scheme"), SCRATCH_DIR("scratch-dir"), SECRET("secret"), SENDFILE("sendfile"), SMAP("smap"), SOURCE_VM("source-vm"),
+
+    TARGET_VM("target-vm"), TRIM_SPACES("trim-spaces"), TAG_POOLING("tag-pooling"),
 
     WEBDAV("webdav"),
 
-    X_POWERED_BY("x-powered-by"),    
-    ;
+    X_POWERED_BY("x-powered-by"), ;
     private final String name;
 
     Attribute(final String name) {
@@ -107,7 +85,8 @@ enum Attribute {
         final Map<String, Attribute> map = new HashMap<String, Attribute>();
         for (Attribute element : values()) {
             final String name = element.getLocalName();
-            if (name != null) map.put(name, element);
+            if (name != null)
+                map.put(name, element);
         }
         MAP = map;
     }
@@ -117,8 +96,8 @@ enum Attribute {
         return element == null ? UNKNOWN : element;
     }
 
+    @Override
     public String toString() {
         return getLocalName();
     }
 }
-

@@ -22,15 +22,16 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.0" name="jboss-metadata" group="org.jboss.metadata">
+<module xmlns="urn:jboss:module:1.0" name="org.jboss.metadata.jboss-metadata">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-	<module group="javax.xml.bind" name="api" />
-        <module group="org.jboss" name="jboss-common-core" />
-        <module group="org.jboss.logging" name="jboss-logging" />
-        <module group="system" name="system" />
+	<module name="javax.xml.bind.api" />
+        <module name="org.jboss.common-core" />
+        <module name="org.jboss.logging" />
+        <module name="org.javassist" />
+        <module name="system" />
     </dependencies>
 </module>
