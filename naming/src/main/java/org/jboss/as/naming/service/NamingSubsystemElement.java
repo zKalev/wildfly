@@ -139,7 +139,9 @@ final class NamingSubsystemElement extends AbstractSubsystemElement<NamingSubsys
         // Setup naming environment
         System.setProperty(Context.URL_PKG_PREFIXES, PACKAGE_PREFIXES);
         try {
-            NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
+            //If we are reusing the JVM. e.g. in tests we should not set this again
+            if (!NamingManager.hasInitialContextFactoryBuilder())
+                NamingManager.setInitialContextFactoryBuilder(new InitialContextFactoryBuilder());
         } catch (NamingException e) {
             log.warn("Failed to set InitialContextFactoryBuilder", e);
         }
