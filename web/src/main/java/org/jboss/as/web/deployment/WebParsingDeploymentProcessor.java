@@ -21,15 +21,21 @@
 */
 package org.jboss.as.web.deployment;
 
+import java.io.InputStream;
+
 import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.DeploymentPhases;
 import org.jboss.as.deployment.attachment.VirtualFileAttachment;
 import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
-import org.jboss.as.web.metadata.WebMetaData;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.web.spec.Web30MetaData;
+import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.xb.binding.Unmarshaller;
+import org.jboss.xb.binding.UnmarshallerFactory;
+import org.jboss.xb.builder.JBossXBBuilder;
 
 /**
  * @author Jean-Frederic Clere
@@ -41,14 +47,28 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
 
     private static final String WEB_XML = "WEB-INF/web.xml";
     
+    static {
+    	System.setProperty("org.jboss.reflect.spi.TypeInfoFactory", "org.jboss.reflect.plugins.javassist.JavassistTypeInfoFactory");
+    }
+  
 	public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
 		final VirtualFile deploymentRoot = VirtualFileAttachment.getVirtualFileAttachment(context);
 		final VirtualFile webXml = deploymentRoot.getChild(WEB_XML);
 		if(webXml.exists()) {
 		    Logger.getLogger("org.jboss.web").info("found web.xml " + webXml.getPathName());
-		    // Parse web.xml
-		    context.putAttachment(ATTACHMENT_KEY, new WebMetaData());
+		    try {
+			    // Parse web.xml
+				WebMetaData webMetaData = parse(webXml.openStream(), Web30MetaData.class);
+			    context.putAttachment(ATTACHMENT_KEY, webMetaData);
+			} catch (Exception e) {
+				throw new DeploymentUnitProcessingException("failed to parse " + webXml, e);
+			}
 		}
+	}
+	
+	<T> T parse(InputStream is, Class<T> clazz) throws Exception {
+		Unmarshaller unmarshaller = UnmarshallerFactory.newInstance().newUnmarshaller();
+		return clazz.cast(unmarshaller.unmarshal(is, JBossXBBuilder.build(clazz)));
 	}
 	
 }

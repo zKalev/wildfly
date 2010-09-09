@@ -35,7 +35,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.web.WebServer;
 import org.jboss.as.web.WebSubsystemElement;
-import org.jboss.as.web.metadata.WebMetaData;
+import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.BatchBuilder;

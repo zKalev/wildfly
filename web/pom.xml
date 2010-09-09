@@ -75,5 +75,39 @@
 			<groupId>org.jboss.web</groupId>
 			<artifactId>jbossweb</artifactId>
 		</dependency>
+
+                <!-- HACK JFCLERE -->
+                <dependency>
+                  <groupId>org.jboss.metadata</groupId>
+                  <artifactId>jboss-metadata-common</artifactId>
+                  <version>${version.org.jboss.metadata.common}</version>
+                  <exclusions>
+                    <exclusion>
+                      <groupId>org.jboss.javaee</groupId>
+                      <artifactId>jboss-ejb-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                      <groupId>org.jboss.javaee</groupId>
+                      <artifactId>jboss-jms-api</artifactId>
+                    </exclusion>
+                  </exclusions>
+                </dependency>
+                <dependency>
+                  <groupId>org.jboss.metadata</groupId>
+                  <artifactId>jboss-metadata-war</artifactId>
+                  <version>${version.org.jboss.metadata.war}</version>
+                  <exclusions>
+                    <exclusion>
+                      <groupId>jboss.web</groupId>
+                      <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                      <groupId>org.jboss.javaee</groupId>
+                      <artifactId>jboss-ejb-api</artifactId>
+                    </exclusion>
+                  </exclusions>
+                </dependency>
+                <!-- HACK JFCLERE -->
+
 	</dependencies>
 </project>

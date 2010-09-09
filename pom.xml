@@ -98,6 +98,10 @@
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
         <version.org.slf4j.jcl-over-slf4j>1.5.8</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.5.8</version.org.slf4j.slf4j-api>
+        <version.org.jboss.metadata.common>2.0.0.Alpha16</version.org.jboss.metadata.common>
+        <version.org.jboss.metadata.war>2.0.0.Alpha14</version.org.jboss.metadata.war>
+        <version.org.jboss.jbossxb>2.0.2.Beta7</version.org.jboss.jbossxb>
+        <version.org.jboss.reflect>2.2.0.Alpha9</version.org.jboss.reflect>
     </properties>
 
     <modules>
@@ -229,6 +233,82 @@
                 <artifactId>jboss-as-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <!-- HACK JFCLERE -->
+            <dependency>
+              <groupId>org.jboss.metadata</groupId>
+              <artifactId>jboss-metadata-common</artifactId>
+              <version>${version.org.jboss.metadata.common}</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>org.jboss.javaee</groupId>
+                  <artifactId>jboss-ejb-api</artifactId>
+                </exclusion>
+                <exclusion>
+                  <groupId>org.jboss.javaee</groupId>
+                  <artifactId>jboss-jms-api</artifactId>
+                </exclusion>
+                <exclusion>
+                  <groupId>org.jboss.logging</groupId>
+                  <artifactId>jboss-logging-spi</artifactId>
+                </exclusion>
+                <exclusion>
+                  <groupId>org.jboss</groupId>
+                  <artifactId>jboss-common-core</artifactId>
+                </exclusion>
+                <exclusion>
+                  <groupId>org.hibernate</groupId>
+                  <artifactId>ejb3-persistence</artifactId>
+                </exclusion>
+                <exclusion>
+                  <groupId>org.jboss.ws</groupId>
+                  <artifactId>jbossws-spi</artifactId>
+                </exclusion>
+                <exclusion>
+                  <groupId>jboss.jbossws</groupId>
+                  <artifactId>jboss-jaxws</artifactId>
+                </exclusion>
+                <exclusion>
+                  <groupId>org.jboss</groupId>
+                  <artifactId>jboss-mdr</artifactId>
+                </exclusion>
+
+
+              </exclusions>
+            </dependency>
+            <dependency>
+              <groupId>org.jboss.metadata</groupId>
+              <artifactId>jboss-metadata-war</artifactId>
+              <version>${version.org.jboss.metadata.war}</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>jboss.web</groupId>
+                  <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                  <groupId>org.jboss.javaee</groupId>
+                  <artifactId>jboss-ejb-api</artifactId>
+                </exclusion>
+                <exclusion>
+                  <groupId>org.jboss.ejb3</groupId>
+                  <artifactId>jboss-ejb3-ext-api</artifactId>
+                </exclusion>
+              </exclusions>
+            </dependency>
+
+            <dependency>
+              <groupId>org.jboss</groupId>
+              <artifactId>jbossxb</artifactId>
+              <version>${version.org.jboss.jbossxb}</version>
+            </dependency>
+
+            <dependency>
+              <groupId>org.jboss</groupId>
+              <artifactId>jboss-reflect</artifactId>
+              <version>${version.org.jboss.reflect}</version>
+            </dependency>
+
+            <!-- HACK JFCLERE -->
 
             <!-- Something ? 
             <dependency>

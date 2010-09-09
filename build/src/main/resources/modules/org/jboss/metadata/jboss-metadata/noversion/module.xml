@@ -28,6 +28,9 @@
     </resources>
 
     <dependencies>
-        <!-- Insert dependencies here -->
+	<module group="javax.xml.bind" name="api" />
+        <module group="org.jboss" name="jboss-common-core" />
+        <module group="org.jboss.logging" name="jboss-logging" />
+        <module group="system" name="system" />
     </dependencies>
 </module>

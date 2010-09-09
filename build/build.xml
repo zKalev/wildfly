@@ -211,6 +211,15 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-web-root"/>
         </module-def>
 
+        <!-- HACK JFCLERE -->
+        <module-def group="org.jboss.metadata" artifact="jboss-metadata">
+            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-common"/>
+            <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-war"/>
+            <maven-resource group="org.jboss" artifact="jbossxb"/>
+            <maven-resource group="org.jboss" artifact="jboss-reflect"/>
+        </module-def>
+        <!-- HACK JFCLERE -->
+
         <module-def group="org.jboss" artifact="jandex">
             <maven-resource group="org.jboss" artifact="jandex"/>
         </module-def>
