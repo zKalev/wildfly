@@ -30,13 +30,13 @@ import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
-import org.jboss.metadata.web.spec.Web23MetaData;
-import org.jboss.metadata.web.spec.Web30MetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.xb.binding.Unmarshaller;
 import org.jboss.xb.binding.UnmarshallerFactory;
 import org.jboss.xb.builder.JBossXBBuilder;
+import org.jboss.xb.binding.sunday.unmarshalling.SchemaBindingResolver;
+import org.jboss.xb.binding.sunday.unmarshalling.SingletonSchemaResolverFactory;
 
 /**
  * @author Jean-Frederic Clere
@@ -54,20 +54,20 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
         final VirtualFile webXml = deploymentRoot.getChild(WEB_XML);
         if (webXml.exists()) {
             Logger.getLogger("org.jboss.web").info("found web.xml " + webXml.getPathName());
+            ClassLoader old = Thread.currentThread().getContextClassLoader();
             try {
                 // Parse web.xml
-               // Thread.currentThread().getContextClassLoader().loadClass("org.jboss.metadata.javaee.spec.DescriptionsImpl");
-                WebMetaData webMetaData = parse(webXml.openStream(), Web23MetaData.class);
+                Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+                Unmarshaller unmarshaller = UnmarshallerFactory.newInstance().newUnmarshaller();
+                SchemaBindingResolver resolver = SingletonSchemaResolverFactory.getInstance().getSchemaBindingResolver();
+                WebMetaData webMetaData = (WebMetaData) unmarshaller.unmarshal(webXml.getPathName(), resolver);
+                ///WebMetaData webMetaData = parse(webXml.openStream(), Web23MetaData.class);
                 context.putAttachment(ATTACHMENT_KEY, webMetaData);
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException("failed to parse " + webXml, e);
+            } finally {
+                Thread.currentThread().setContextClassLoader(old);
             }
         }
     }
-
-    <T> T parse(InputStream is, Class<T> clazz) throws Exception {
-        Unmarshaller unmarshaller = UnmarshallerFactory.newInstance().newUnmarshaller();
-        return clazz.cast(unmarshaller.unmarshal(is, JBossXBBuilder.build(clazz)));
-    }
-
 }
