@@ -35,10 +35,6 @@
                 <exclude path="javax/xml/bind/**"/>
                 <exclude path="javax/xml/soap/**"/>
                 <exclude path="javax/xml/ws/**"/>
-                <include path="org/ietf/**"/>
-                <include path="org/omg/**"/>
-                <include path="org/w3c/**"/>
-                <include path="org/xml/**"/>
             </exports>
         </module>
     </dependencies>
