@@ -217,6 +217,9 @@
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-war"/>
             <maven-resource group="org.jboss" artifact="jbossxb"/>
             <maven-resource group="org.jboss" artifact="jboss-reflect"/>
+            <maven-resource group="org.jboss" artifact="jboss-mdr"/>
+            <maven-resource group="org.hibernate.javax.persistence" artifact="hibernate-jpa-2.0-api"/>
+            <maven-resource group="apache-xerces" artifact="xercesImpl"/>
         </module-def>
         <!-- HACK JFCLERE -->
 

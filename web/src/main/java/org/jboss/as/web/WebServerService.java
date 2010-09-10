@@ -38,6 +38,9 @@ import org.apache.catalina.core.StandardService;
 import org.apache.catalina.startup.Catalina;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -76,7 +79,6 @@ class WebServerService implements WebServer, Service<WebServer> {
 
         // TODO do we really need the MBeanServer ?
         // getRegistry().setMBeanServer(mbeanServer.getValue());
-        System.err.println("WebServerService: " + Thread.currentThread().getContextClassLoader());
 
         final Catalina catalina = new Catalina();
         this.catalina = catalina;

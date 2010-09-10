@@ -30,6 +30,7 @@ import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.web.spec.Web23MetaData;
 import org.jboss.metadata.web.spec.Web30MetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
@@ -48,7 +49,6 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
     private static final String WEB_XML = "WEB-INF/web.xml";
 
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
-        System.err.println("processDeployment: " + Thread.currentThread().getContextClassLoader());
 
         final VirtualFile deploymentRoot = VirtualFileAttachment.getVirtualFileAttachment(context);
         final VirtualFile webXml = deploymentRoot.getChild(WEB_XML);
@@ -57,7 +57,7 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
             try {
                 // Parse web.xml
                // Thread.currentThread().getContextClassLoader().loadClass("org.jboss.metadata.javaee.spec.DescriptionsImpl");
-                WebMetaData webMetaData = parse(webXml.openStream(), Web30MetaData.class);
+                WebMetaData webMetaData = parse(webXml.openStream(), Web23MetaData.class);
                 context.putAttachment(ATTACHMENT_KEY, webMetaData);
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException("failed to parse " + webXml, e);

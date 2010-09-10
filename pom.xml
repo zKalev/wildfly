@@ -98,10 +98,12 @@
         <version.org.jboss.xnio.xnio-nio>2.1.0.CR2</version.org.jboss.xnio.xnio-nio>
         <version.org.slf4j.jcl-over-slf4j>1.5.8</version.org.slf4j.jcl-over-slf4j>
         <version.org.slf4j.slf4j-api>1.5.8</version.org.slf4j.slf4j-api>
+        <!-- Meta stuff and deps -->
         <version.org.jboss.metadata.common>2.0.0.Alpha16</version.org.jboss.metadata.common>
         <version.org.jboss.metadata.war>2.0.0.Alpha14</version.org.jboss.metadata.war>
         <version.org.jboss.jbossxb>2.0.2.Beta7</version.org.jboss.jbossxb>
         <version.org.jboss.reflect>2.2.0.Alpha9</version.org.jboss.reflect>
+        <version.org.jboss.mdr>2.2.0.Alpha3</version.org.jboss.mdr>
     </properties>
 
     <modules>
@@ -315,10 +317,6 @@
                   <groupId>jboss.jbossws</groupId>
                   <artifactId>jboss-jaxws</artifactId>
                 </exclusion>
-                <exclusion>
-                  <groupId>org.jboss</groupId>
-                  <artifactId>jboss-mdr</artifactId>
-                </exclusion>
               </exclusions>
             </dependency>
 
@@ -354,6 +352,29 @@
               <version>${version.org.jboss.reflect}</version>
             </dependency>
 
+            <dependency>
+              <groupId>org.jboss</groupId>
+              <artifactId>jboss-mdr</artifactId>
+              <version>${version.org.jboss.mdr}</version>
+            </dependency>
+
+            <dependency>
+              <groupId>org.hibernate.javax.persistence</groupId>
+              <artifactId>hibernate-jpa-2.0-api</artifactId>
+              <version>1.0.0-CR-1</version>
+            </dependency>
+
+            <dependency>
+              <groupId>apache-xerces</groupId>
+              <artifactId>xercesImpl</artifactId>
+              <version>2.9.1</version>
+            </dependency>
+
+            <dependency>
+              <groupId>apache-xerces</groupId>
+              <artifactId>xml-apis</artifactId>
+              <version>2.9.1</version>
+            </dependency>
             <!-- HACK JFCLERE -->
 
             <!-- Something ? 
@@ -604,10 +625,6 @@
                     <exclusion>
                         <groupId>javax.xml.ws</groupId>
                         <artifactId>jaxws-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate.javax.persistence</groupId>
-                        <artifactId>hibernate-jpa-2.0-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
