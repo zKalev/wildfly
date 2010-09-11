@@ -30,12 +30,16 @@ import org.jboss.as.deployment.unit.DeploymentUnitContext;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.web.spec.Web22MetaData;
+import org.jboss.metadata.web.spec.Web23MetaData;
+import org.jboss.metadata.web.spec.Web24MetaData;
+import org.jboss.metadata.web.spec.Web25MetaData;
+import org.jboss.metadata.web.spec.Web30MetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.xb.binding.Unmarshaller;
 import org.jboss.xb.binding.UnmarshallerFactory;
-import org.jboss.xb.builder.JBossXBBuilder;
-import org.jboss.xb.binding.sunday.unmarshalling.SchemaBindingResolver;
+import org.jboss.xb.binding.resolver.MutableSchemaResolver;
 import org.jboss.xb.binding.sunday.unmarshalling.SingletonSchemaResolverFactory;
 
 /**
@@ -48,26 +52,37 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
 
     private static final String WEB_XML = "WEB-INF/web.xml";
 
+    private static final MutableSchemaResolver resolver = SingletonSchemaResolverFactory.getInstance().getSchemaBindingResolver();
+
+    static {
+        resolver.mapLocationToClass("web-app", Web22MetaData.class);
+        resolver.mapLocationToClass("web-app_2_2.dtd", Web22MetaData.class);
+        resolver.mapLocationToClass("web-app_2_3.dtd", Web23MetaData.class);
+        resolver.mapLocationToClass("web-app_2_4.xsd", Web24MetaData.class);
+        resolver.mapLocationToClass("web-app_2_5.xsd", Web25MetaData.class);
+        resolver.mapLocationToClass("web-app_3_0.xsd", Web30MetaData.class);
+    }
+
     public void processDeployment(DeploymentUnitContext context) throws DeploymentUnitProcessingException {
 
         final VirtualFile deploymentRoot = VirtualFileAttachment.getVirtualFileAttachment(context);
         final VirtualFile webXml = deploymentRoot.getChild(WEB_XML);
         if (webXml.exists()) {
             Logger.getLogger("org.jboss.web").info("found web.xml " + webXml.getPathName());
-            ClassLoader old = Thread.currentThread().getContextClassLoader();
             try {
-                // Parse web.xml
-                Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-                Unmarshaller unmarshaller = UnmarshallerFactory.newInstance().newUnmarshaller();
-                SchemaBindingResolver resolver = SingletonSchemaResolverFactory.getInstance().getSchemaBindingResolver();
-                WebMetaData webMetaData = (WebMetaData) unmarshaller.unmarshal(webXml.getPathName(), resolver);
-                ///WebMetaData webMetaData = parse(webXml.openStream(), Web23MetaData.class);
+                long time = System.currentTimeMillis();
+                WebMetaData webMetaData = unmarshal(webXml.openStream(), WebMetaData.class);
+                Logger.getLogger("org.jboss.web").info("parse " + (System.currentTimeMillis() - time));
                 context.putAttachment(ATTACHMENT_KEY, webMetaData);
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException("failed to parse " + webXml, e);
-            } finally {
-                Thread.currentThread().setContextClassLoader(old);
             }
         }
     }
+
+    protected static <T> T unmarshal(InputStream is, Class<T> clazz) throws Exception {
+        Unmarshaller unmarshaller = UnmarshallerFactory.newInstance().newUnmarshaller();
+        return clazz.cast(unmarshaller.unmarshal(is, resolver));
+    }
+
 }
