@@ -22,6 +22,8 @@
 package org.jboss.as.web.deployment;
 
 import java.io.InputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import org.jboss.as.deployment.AttachmentKey;
 import org.jboss.as.deployment.DeploymentPhases;
@@ -81,8 +83,28 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     protected static <T> T unmarshal(InputStream is, Class<T> clazz) throws Exception {
-        Unmarshaller unmarshaller = UnmarshallerFactory.newInstance().newUnmarshaller();
-        return clazz.cast(unmarshaller.unmarshal(is, resolver));
+        try {
+            AccessController.doPrivileged(new SetContextLoaderAction(WebParsingDeploymentProcessor.class.getClassLoader()));
+            Unmarshaller unmarshaller = UnmarshallerFactory.newInstance().newUnmarshaller();
+            return clazz.cast(unmarshaller.unmarshal(is, resolver));
+        } finally {
+            AccessController.doPrivileged(CLEAR_ACTION);
+        }
+    }
+
+    private static final SetContextLoaderAction CLEAR_ACTION = new SetContextLoaderAction(null);
+    private static class SetContextLoaderAction implements PrivilegedAction<Void> {
+
+        private final ClassLoader classLoader;
+
+        public SetContextLoaderAction(final ClassLoader classLoader) {
+            this.classLoader = classLoader;
+        }
+
+        public Void run() {
+            Thread.currentThread().setContextClassLoader(classLoader);
+            return null;
+        }
     }
 
 }
