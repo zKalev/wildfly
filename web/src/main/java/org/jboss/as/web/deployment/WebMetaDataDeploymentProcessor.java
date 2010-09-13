@@ -69,7 +69,6 @@ public class WebMetaDataDeploymentProcessor implements DeploymentUnitProcessor {
 
         // FIXME create context per host
         final String hostName = null;
-        final String pathName = "";
         // The deployment name
         final String deploymentName = context.getName();
         // Create the context
@@ -84,7 +83,13 @@ public class WebMetaDataDeploymentProcessor implements DeploymentUnitProcessor {
         webContext.addLifecycleListener(config);
 
         //
-        webContext.setPath(pathName);
+        String pathName = context.getName();
+        if (pathName.equals("ROOT_war")) {
+            pathName = "";
+        } else {
+            pathName = "/" + pathName.substring(0, pathName.length()-4);
+        }
+        webContext.setPath(pathName); // Set the name too.
         webContext.setIgnoreAnnotations(true);
         webContext.setPrivileged(true);
         //
