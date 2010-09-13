@@ -22,6 +22,10 @@
 package org.jboss.as.web.deployment;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.List;
 
 import org.apache.catalina.Loader;
 import org.apache.catalina.core.StandardContext;
@@ -35,6 +39,9 @@ import org.jboss.as.deployment.unit.DeploymentUnitProcessingException;
 import org.jboss.as.deployment.unit.DeploymentUnitProcessor;
 import org.jboss.as.web.WebServer;
 import org.jboss.as.web.WebSubsystemElement;
+import org.jboss.metadata.web.spec.ServletMappingMetaData;
+import org.jboss.metadata.web.spec.ServletMetaData;
+import org.jboss.metadata.web.spec.ServletsMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
@@ -65,7 +72,16 @@ public class WebMetaDataDeploymentProcessor implements DeploymentUnitProcessor {
         if (module == null) {
             throw new DeploymentUnitProcessingException("failed to resolve module for deployment " + deploymentRoot);
         }
-        final ClassLoader classLoader = module.getClassLoader();
+        final ClassLoader cl = module.getClassLoader();
+        // Hack to find the class files.
+        ClassLoader classLoader;
+        try {
+            classLoader = new WebClassLoader(deploymentRoot.getChild("WEB-INF/classes").getPhysicalFile(),cl);
+        } catch (IOException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+            classLoader = cl;
+        }
 
         // FIXME create context per host
         final String hostName = null;
@@ -101,6 +117,34 @@ public class WebMetaDataDeploymentProcessor implements DeploymentUnitProcessor {
 
         webContext.setInstanceManager(manager);
         webContext.setLoader(loader);
+
+        // Add the servlet mapping from the metadata
+        // Servlets
+        ServletsMetaData servlets = metaData.getServlets();
+        if (servlets != null) {
+           for (ServletMetaData value : servlets) {
+              org.apache.catalina.Wrapper wrapper = webContext.createWrapper();
+              wrapper.setName(value.getName());
+              wrapper.setServletClass(value.getServletClass());
+              // Hacks
+              wrapper.setLoadOnStartup(1);
+              wrapper.setEnabled(true);
+              webContext.addChild(wrapper);
+           }
+        }
+
+        // Servlet mappings
+        List<ServletMappingMetaData> smappings = metaData.getServletMappings();
+        if (smappings != null) {
+           for (ServletMappingMetaData value : smappings) {
+              List<String> urlPatterns = value.getUrlPatterns();
+              if (urlPatterns != null) {
+                 for (String pattern : urlPatterns)
+                    webContext.addServletMapping(pattern, value.getServletName());
+              }
+           }
+        }
+
 
         // Add the context service
         final BatchBuilder builder = context.getBatchBuilder();
